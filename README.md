@@ -43,5 +43,8 @@ Currently the application supports all languages where it's possible to define t
 ## Supported platforms
 You can find this information in [`Supported OS` section of project build documentation](documentation/build.md).
 
+## How to build
+See the [project build documentation](documentation/build.md)
+
 ## Where can be used
 You can add it, for example, as step in your pipelines. So the QA engineer will see the results of application output and based on them will build the testing plan.
