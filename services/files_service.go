@@ -20,13 +20,14 @@ func isIgnoredDir(path string) bool {
 	return false
 }
 
+//LoadAvailableFeaturesInDir method loads the available project features in the memory
 func LoadAvailableFeaturesInDir(src string, ext string, pathToIgnoreFile string) (foundResults map[string][]Feature, err error) {
 	if _, err := os.Stat(src); os.IsNotExist(err) {
 		return nil, err
 	}
 
 	foundResults = map[string][]Feature{}
-	ignoredPaths, err = GetGitIgnoreFilePaths(pathToIgnoreFile)
+	ignoredPaths, err = GetIgnoredFilePaths(pathToIgnoreFile)
 	if err != nil {
 		return foundResults, err
 	}
@@ -68,6 +69,9 @@ func LoadAvailableFeaturesInDir(src string, ext string, pathToIgnoreFile string)
 	return
 }
 
+//FindFeaturesInFile find the features in the destination file path
+//basePath - will be used for generation of relation path
+//filePath - the actual absolute file path
 func FindFeaturesInFile(basePath string, filePath string) (features []Feature, err error) {
 	fsFile, err := os.Open(filePath)
 	if err != nil {
@@ -112,7 +116,8 @@ func FindFeaturesInFile(basePath string, filePath string) (features []Feature, e
 	return features, nil
 }
 
-func GetGitIgnoreFilePaths(path string) (files []string, err error) {
+//GetIgnoredFilePaths used for generation of the list of ignored file paths, which will be ignored during the features search
+func GetIgnoredFilePaths(path string) (files []string, err error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, nil
 	}

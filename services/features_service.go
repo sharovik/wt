@@ -20,17 +20,18 @@ var (
 
 //ProjectFeatures this is main struct which is used for generation of WT configuration
 type ProjectFeatures struct {
-	FoundFeatures map[string][]Feature `json:"found_features"`
+	FoundFeatures       map[string][]Feature `json:"found_features"`
 	FoundFeaturesByFile map[string][]Feature `json:"found_features_by_file"`
 }
 
 //Feature the struct for unique feature
 type Feature struct {
-	Name string
+	Name     string
 	FilePath string
-	Line int
+	Line     int
 }
 
+//CleanUpGlobalVars method which cleanup the project features object attributes
 func CleanUpGlobalVars() {
 	PF.FoundFeatures = map[string][]Feature{}
 	PF.FoundFeaturesByFile = map[string][]Feature{}
