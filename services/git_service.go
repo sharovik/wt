@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -22,9 +23,11 @@ const regexpParseFileNames = `(?im)(?:[A-Z]\s+)(.*)`
 func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, err error) {
 	cmd := exec.Command("git", "diff", "--name-status", fmt.Sprintf("%s..%s", branch1, branch2))
 	cmd.Dir = path
+	var errbuf bytes.Buffer
+	cmd.Stderr = &errbuf
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Received git error: %s", err.Error()))
+		fmt.Println(fmt.Sprintf("Received git error: %s; Stderr: %s", err.Error(), errbuf.String()))
 		return nil, err
 	}
 

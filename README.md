@@ -5,6 +5,9 @@ This is a small application, which will check your code and will try to fetch th
 You define the path where application need to check the files. It goes through all files in selected path and tries to find the `@featureType` comment where you define the type of features. Then it uses `git diff` to compare selected branches and based on the output it decides what kind of files were touched.
 After that it goes through this files list and tries to find the files, where features are defined. At the end, application shows what can be potentially tested.
 
+## Requirements
+- git - it will be used for branches compare and diff retrieving
+
 ## How to use
 In your code, please define the feature by writing of `@featureType {YOUR FEATURE NAME}` comment.
 ```php
