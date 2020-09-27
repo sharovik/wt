@@ -39,6 +39,8 @@ The path to file, where line-by-line written the list of paths which should be i
 The type of vcs which will be used for retrieving diff information. (default "git")
 - `workingBranch` (string)
 Working branch which will be compared with the destination branch.
+- `displayTemplate` (string)
+The view which will be used for display results. By default is: `features`. Available types of views: `full` and `features`
 
 ## Supported languages
 Currently the application supports all languages where it's possible to define the `comments`. Eg: `#@featureType test` or `//@featureType test` or even `/* @featureType test */`
