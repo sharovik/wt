@@ -117,7 +117,7 @@ func printFeatures(files []string) string {
 	if len(featuresTouched) > 0 {
 		resultString = "Total features touched:\n"
 		for name, file := range featuresTouched {
-        resultString += fmt.Sprintf("* %s\nFile: %s\n", name, file)
+			resultString += fmt.Sprintf("* %s\nFile: %s\n", name, file)
 		}
 	}
 
