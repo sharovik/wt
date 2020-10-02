@@ -102,22 +102,23 @@ func printFull(files []string) string {
 }
 
 func printFeatures(files []string) string {
-	var featuresTouched = map[string]string{}
+	var featuresTouched = map[string][]string{}
 	for _, file := range files {
 		if len(services.PF.FoundFeaturesByFile[file]) > 0 {
 			for _, feature := range services.PF.FoundFeaturesByFile[file] {
-				if featuresTouched[feature.Name] == "" {
-					featuresTouched[feature.Name] = file
-				}
+				featuresTouched[file] = append(featuresTouched[file], feature.Name)
 			}
 		}
 	}
 
 	resultString := ""
 	if len(featuresTouched) > 0 {
-		resultString = "Total features touched:\n"
-		for name, file := range featuresTouched {
-			resultString += fmt.Sprintf("* %s\nFile: %s\n", name, file)
+		resultString = "Below you can see the list of touched features:\n"
+		for file, features := range featuresTouched {
+			resultString += fmt.Sprintf("File: %s\n", file)
+			for _, feature := range features {
+				resultString += fmt.Sprintf("* %s\n", feature)
+			}
 		}
 	}
 
