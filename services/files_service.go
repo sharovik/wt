@@ -133,7 +133,9 @@ func GetIgnoredFilePaths(path string) (files []string, err error) {
 	scanner := bufio.NewScanner(fsFile)
 
 	for scanner.Scan() {
-		files = append(files, scanner.Text())
+		if scanner.Text() != "" {
+			files = append(files, scanner.Text())
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
