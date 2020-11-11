@@ -80,6 +80,8 @@ func FindFeaturesInFile(basePath string, filePath string) (features []Feature, e
 
 	// Splits on newlines by default.
 	scanner := bufio.NewScanner(fsFile)
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
 
 	line := 1
 	for scanner.Scan() {
