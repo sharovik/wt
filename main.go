@@ -3,7 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/sharovik/wt/analysis"
+	"github.com/sharovik/wt/dto"
 	"log"
+	"path/filepath"
+	"strings"
 
 	"github.com/sharovik/wt/services"
 )
@@ -11,6 +15,7 @@ import (
 const (
 	defaultIgnorePath        = ".gitignore"
 	defaultDestinationBranch = "master"
+	defaultIgnoredPaths = "tests"
 
 	displayFull     = "full"
 	displayFeatures = "features"
@@ -23,9 +28,12 @@ func main() {
 	destinationBranch := flag.String("destinationBranch", defaultDestinationBranch, "Destination branch with which we will compare selected working branch.")
 	vcsType := flag.String("vcs", "git", "The type of vcs which will be used for retrieving diff information.")
 	path := flag.String("path", ".", "The type of vcs which will be used for retrieving diff information.")
-	ext := flag.String("fileExt", "", "The type of extension of the files which we need to check.")
-	pathToIgnoreFile := flag.String("pathToIgnoreFile", defaultIgnorePath, fmt.Sprintf("The path to file, where line-by-line written the list of paths which should be ignored. By default it's: %s", defaultIgnorePath))
-	displayTemplate := flag.String("displayTemplate", displayFeatures, fmt.Sprintf("The view which will be used for display results. By default is: %s", displayFeatures))
+	ext := flag.String("fileExt", "", "The type of extension of the diff which we need to check.")
+	pathToIgnoreFile := flag.String("pathToIgnoreFile", defaultIgnorePath, fmt.Sprintf("The path to file, where line-by-line written the list of paths which should be ignored. Default it's: %s", defaultIgnorePath))
+	displayTemplate := flag.String("displayTemplate", displayFeatures, fmt.Sprintf("The view which will be used for display results. Default is: %s", displayFeatures))
+	ignoreFromAnalysis := flag.String("ignoreFromAnalysis", defaultIgnoredPaths, fmt.Sprintf("The list of folders/files separated by comma, which will be ignored during the files analysis. Default is: %s", defaultIgnoredPaths))
+	maxAnalysisDepth := flag.Int("maxAnalysisDepth", analysis.DefaultMaxDeepLevel, fmt.Sprintf("The maximum analysis code depth will be used during the code usage analysing. Default is: %d", analysis.DefaultMaxDeepLevel))
+	withToBeChecked := flag.Bool("withToBeChecked", false, fmt.Sprintf("Display or not the files which should be covered by features annotation. Default is: %v", false))
 
 	flag.Parse()
 
@@ -49,44 +57,102 @@ func main() {
 		log.Fatal(fmt.Errorf("Working branch and destination branch should not be empty. Please make sure you define them. "))
 	}
 
-	_, err := services.LoadAvailableFeaturesInDir(*path, *ext, *pathToIgnoreFile)
+	analysis.MaxDeepLevel = *maxAnalysisDepth
+
+	loadVcs(*vcsType)
+	loadAnalysisService(*ext)
+
+	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	loadVcs(*vcsType)
+	if *ignoreFromAnalysis != "" {
+		for _, path := range strings.Split(*ignoreFromAnalysis, ",") {
+			paths = append(paths, path)
+		}
+	}
+
+	index, pathIndex, importsIndex, err := services.AnalyseTheCode(*path, *ext, paths)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	analysis.AnalysedEntrypointsIndex = index
+	analysis.AnalysedPathsIndex = pathIndex
+	analysis.AnalysedImportsIndex = importsIndex
+
+	absolutePath, err := filepath.Abs(*path)
+	if err != nil {
+		return
+	}
+
+	diff, err := vcs.Diff(absolutePath, *workingBranch, *destinationBranch)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
 
 	resultString := ""
-	if *workingBranch != "" && *destinationBranch != "" {
-		files, err := vcs.Diff(*path, *workingBranch, *destinationBranch)
-		if err != nil {
-			log.Fatal(err)
+	if len(diff) > 0 {
+		if len(toBeChecked) > 0 {
+			resultString += fmt.Sprintf("Your changes can potentially touch the functionality in the `%d` files.", len(toBeChecked))
+			if *withToBeChecked {
+				resultString += fmt.Sprintf("\nPlease check the following files:\n\n")
+				resultString += fmt.Sprintf("%s\n\n", printToBeChecked(toBeChecked))
+			} else {
+				resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.", services.FeatureAlias)
+			}
 		}
 
-		if len(files) > 0 {
-			switch *displayTemplate {
-			case displayFull:
-				resultString = printFull(files)
-				break
-			case displayFeatures:
-				resultString = printFeatures(files)
-				break
-			}
+		resultString += "\n\n"
 
-			if resultString == "" {
-				resultString = "I found no features touched by these changes.\nPlease, make sure you define the features in these files"
-			} else {
-				resultString += fmt.Sprintf("Please make sure you test these features before you merge `%s` branch into `%s`.", *workingBranch, *destinationBranch)
-			}
+		switch *displayTemplate {
+		case displayFull:
+			resultString += printFull(diff, absolutePath)
+			break
+		case displayFeatures:
+			resultString += printFeatures(diff, absolutePath)
+			break
+		}
+
+		if resultString == "" {
+			resultString += "I found no features touched by these changes.\nPlease, make sure you define the features in these diff"
+		} else {
+			resultString += fmt.Sprintf("Please make sure you test these features before you merge `%s` branch into `%s`.", *workingBranch, *destinationBranch)
 		}
 	}
 
 	fmt.Println(resultString)
 }
 
-func printFull(files []string) string {
+func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString string) {
+	if len(toBeChecked) == 0 {
+		return ""
+	}
+
+	for relativePath, file := range toBeChecked {
+		resultString += fmt.Sprintf("- `%s`", relativePath)
+		if len(file.UsedIn) > 0 {
+			resultString += " touched by ["
+			for _, usedInFile := range file.UsedIn {
+				resultString += fmt.Sprintf("%s,",usedInFile.MainEntrypoint)
+			}
+			resultString += "]"
+		}
+
+		resultString += "\n"
+	}
+
+	resultString += fmt.Sprintf("\n !!!Warning!!! Please make sure you add `%s` annotation to these files.", services.FeatureAlias)
+	return
+}
+
+func printFull(files []string, absolutePath string) string {
 	resultString := ""
 	for _, file := range files {
+		file := strings.ReplaceAll(file, absolutePath + "/", "")
 		if len(services.PF.FoundFeaturesByFile[file]) > 0 {
 			resultString += fmt.Sprintf("Changes in file: '%s' can potentially touch next features:\n", file)
 			for _, feature := range services.PF.FoundFeaturesByFile[file] {
@@ -101,9 +167,10 @@ func printFull(files []string) string {
 	return resultString
 }
 
-func printFeatures(files []string) string {
+func printFeatures(files []string, absolutePath string) string {
 	var featuresTouched = map[string][]string{}
 	for _, file := range files {
+		file := strings.ReplaceAll(file, absolutePath + "/", "")
 		if len(services.PF.FoundFeaturesByFile[file]) > 0 {
 			for _, feature := range services.PF.FoundFeaturesByFile[file] {
 				featuresTouched[file] = append(featuresTouched[file], feature.Name)
@@ -129,6 +196,17 @@ func loadVcs(vcsType string) {
 	switch vcsType {
 	case "git":
 		vcs = services.Git{}
+		break
+	}
+}
+
+func loadAnalysisService(ext string) {
+	switch ext {
+	case ".php":
+		analysis.An = analysis.PhpAnalysis{}
+		break
+	default:
+		analysis.An = analysis.DefaultAnalysis{}
 		break
 	}
 }
