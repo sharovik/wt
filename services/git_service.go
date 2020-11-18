@@ -10,7 +10,7 @@ import (
 //VcsInterface the vcs interface
 type VcsInterface interface {
 	Diff(path string, branch1 string, branch2 string) (files []string, err error)
-	parseDiffOutput(output string) (files []string, err error)
+	parseDiffOutput(output string, absolutePath string) (files []string, err error)
 }
 
 //Git the object struct of Git vcs
@@ -31,7 +31,7 @@ func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, 
 		return nil, err
 	}
 
-	files, err = g.parseDiffOutput(string(output))
+	files, err = g.parseDiffOutput(string(output), path)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, 
 	return
 }
 
-func (Git) parseDiffOutput(output string) (files []string, err error) {
+func (Git) parseDiffOutput(output string, basePath string) (files []string, err error) {
 	re, err := regexp.Compile(regexpParseFileNames)
 
 	if err != nil {
@@ -48,7 +48,7 @@ func (Git) parseDiffOutput(output string) (files []string, err error) {
 
 	matches := re.FindAllStringSubmatch(output, -1)
 	for _, match := range matches {
-		files = append(files, match[1])
+		files = append(files, fmt.Sprintf("%s/%s", basePath, match[1]))
 	}
 
 	return
