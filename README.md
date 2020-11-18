@@ -22,16 +22,19 @@ function firstFunction() {
 
 Run the command to find the touched files:
 ```shell script
-./wt -path=/APSOLUTE/PATH/TO/YOUR/DIRECTORY -workingBranch=my-brand-new-branch
+./wt -path=. -workingBranch=my-brand-new-branch -fileExt=.php
 ```
+
+Then you will see the output:
+![Small demo](documentation/images/demo.jpg)
 
 ## Available command args
 - `destinationBranch` (string)
 Destination branch with which we will compare selected working branch. (default "master")
 - `fileExt` (string)
-The type of extension of the files which we need to check. If no extension selected, then it will go through all files.
+The type of extension of the files which we need to check. If no extension selected, then it will go through all files. Example: `.php`
 - `path` (string)
-The type of vcs which will be used for retrieving diff information. (default ".")
+The absolute path to your directory where need to search the features. (default ".")
 - `pathToIgnoreFile` (string)
 The path to file, where line-by-line written the list of paths which should be ignored. Default it's: .gitignore (default ".gitignore")
 - `vcs` (string)
@@ -48,9 +51,11 @@ The maximum analysis code depth will be used during the code usage analysing.  D
 Display or not the files which needs to be covered by features annotation. Default is: `false`
 
 ## Supported languages
-Currently, the application supports all languages where it's possible to define the annotations like `#@featureType test` or `//@featureType test` or even `/* @featureType test */`
-Based on file extension which you define in `fileExt`, the application will run not only the check for `@featureType` annotation, but the code analyse for potential touched places.
-The code analyse currently works only for `.php` extension, so for the code analysis based on your custom extension you might need to define your own code analyser. See example: `analysis/php.go`.
+Currently, the application supports all languages where it's possible to define the annotations like `#@featureType test` or `//@featureType test` or even `/* @featureType test */`!
+
+### Code analysis
+Based on file extension which you define in `fileExt`, the application will run not only the check for `@featureType` annotation, but the code analyse for search of other potential touched places.
+The code analyse currently works only for `.php` extension.
 
 ## Supported platforms
 You can find this information in [`Supported OS` section of project build documentation](documentation/build.md).

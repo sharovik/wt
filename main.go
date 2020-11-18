@@ -104,9 +104,9 @@ func main() {
 			} else {
 				resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.", services.FeatureAlias)
 			}
-		}
 
-		resultString += "\n\n"
+			resultString += "\n\n"
+		}
 
 		switch *displayTemplate {
 		case displayFull:
