@@ -200,6 +200,8 @@ func printFeatures(files []string, absolutePath string) string {
 				resultString += fmt.Sprintf("* %s\n", feature)
 			}
 		}
+	} else {
+		resultString = "No features received.\n"
 	}
 
 	return resultString
