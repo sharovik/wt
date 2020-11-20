@@ -19,6 +19,8 @@ const (
 
 	displayFull     = "full"
 	displayFeatures = "features"
+
+	appVersion = "v1.0.9"
 )
 
 var vcs services.VcsInterface
@@ -67,13 +69,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	absolutePath, err := filepath.Abs(*path)
+	if err != nil {
+		return
+	}
+
 	if *ignoreFromAnalysis != "" {
 		for _, path := range strings.Split(*ignoreFromAnalysis, ",") {
 			paths = append(paths, path)
 		}
 	}
 
-	index, pathIndex, importsIndex, err := services.AnalyseTheCode(*path, *ext, paths)
+	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, *ext, paths)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,11 +89,6 @@ func main() {
 	analysis.AnalysedPathsIndex = pathIndex
 	analysis.AnalysedImportsIndex = importsIndex
 
-	absolutePath, err := filepath.Abs(*path)
-	if err != nil {
-		return
-	}
-
 	diff, err := vcs.Diff(absolutePath, *workingBranch, *destinationBranch)
 	if err != nil {
 		log.Fatal(err)
@@ -94,7 +96,7 @@ func main() {
 
 	_, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
 
-	resultString := ""
+	resultString := fmt.Sprintf("What touched by sharovik. Version: %s", appVersion)
 	if len(diff) > 0 {
 		if len(toBeChecked) > 0 {
 			resultString += fmt.Sprintf("Your changes can potentially touch the functionality in the `%d` files.", len(toBeChecked))
@@ -105,7 +107,7 @@ func main() {
 				resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.", services.FeatureAlias)
 			}
 
-			resultString += "\n\n"
+			resultString += "\n"
 		}
 
 		switch *displayTemplate {
