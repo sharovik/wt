@@ -6,6 +6,7 @@ You define the path where application need to check the files. It goes through a
 
 ## Requirements
 - git - it will be used for branches compare and diff retrieving
+- fetch the destination branch before the `wt` command run
 
 ## How to use
 In your code, please define the feature by writing of `@featureType {YOUR FEATURE NAME}` comment.
