@@ -88,6 +88,7 @@ func main() {
 		}
 	}
 
+	fmt.Println(fmt.Sprintf("Start analysing the code in path: `%s`", absolutePath))
 	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, *ext, paths)
 	if err != nil {
 		log.Fatal(err)
