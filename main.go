@@ -20,7 +20,9 @@ const (
 	displayFull     = "full"
 	displayFeatures = "features"
 
-	appVersion = "v1.0.9"
+	appVersion = "v1.1.0"
+
+	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
 
 var vcs services.VcsInterface
@@ -36,8 +38,14 @@ func main() {
 	ignoreFromAnalysis := flag.String("ignoreFromAnalysis", defaultIgnoredPaths, fmt.Sprintf("The list of folders/files separated by comma, which will be ignored during the files analysis. Default is: %s", defaultIgnoredPaths))
 	maxAnalysisDepth := flag.Int("maxAnalysisDepth", analysis.DefaultMaxDeepLevel, fmt.Sprintf("The maximum analysis code depth will be used during the code usage analysing. Default is: %d", analysis.DefaultMaxDeepLevel))
 	withToBeChecked := flag.Bool("withToBeChecked", false, fmt.Sprintf("Display or not the files which should be covered by features annotation. Default is: %v", false))
+	version := flag.Bool("version", false, "Shows the app version.")
 
 	flag.Parse()
+
+	if *version {
+		fmt.Println(fmt.Sprintf(versionTemplate, appVersion))
+		return
+	}
 
 	if *vcsType == "" {
 		log.Fatal(fmt.Errorf("The vcs should not be empty "))
@@ -96,7 +104,7 @@ func main() {
 
 	_, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
 
-	resultString := fmt.Sprintf("What touched by sharovik. Version: %s", appVersion)
+	resultString := fmt.Sprintf(versionTemplate, appVersion)
 	if len(diff) > 0 {
 		if len(toBeChecked) > 0 {
 			resultString += fmt.Sprintf("Your changes can potentially touch the functionality in the `%d` files.", len(toBeChecked))
