@@ -20,7 +20,7 @@ const (
 	displayFull     = "full"
 	displayFeatures = "features"
 
-	appVersion = "v1.1.1"
+	appVersion = "v1.1.2"
 
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
@@ -72,22 +72,23 @@ func main() {
 	loadVcs(*vcsType)
 	loadAnalysisService(*ext)
 
-	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	absolutePath, err := filepath.Abs(*path)
 	if err != nil {
 		return
 	}
 
+	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile, absolutePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if *ignoreFromAnalysis != "" {
 		for _, path := range strings.Split(*ignoreFromAnalysis, ",") {
-			paths = append(paths, path)
+			paths = append(paths, fmt.Sprintf("%s/%s", absolutePath, path))
 		}
 	}
 
+	fmt.Println(fmt.Sprintf("Start analysing the code in path: `%s`", absolutePath))
 	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, *ext, paths)
 	if err != nil {
 		log.Fatal(err)
@@ -200,6 +201,8 @@ func printFeatures(files []string, absolutePath string) string {
 				resultString += fmt.Sprintf("* %s\n", feature)
 			}
 		}
+	} else {
+		resultString = "No features received.\n"
 	}
 
 	return resultString
