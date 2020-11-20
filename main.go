@@ -72,24 +72,24 @@ func main() {
 	loadVcs(*vcsType)
 	loadAnalysisService(*ext)
 
-	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	absolutePath, err := filepath.Abs(*path)
 	if err != nil {
 		return
 	}
 
+	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile, absolutePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if *ignoreFromAnalysis != "" {
 		for _, path := range strings.Split(*ignoreFromAnalysis, ",") {
-			paths = append(paths, path)
+			paths = append(paths, fmt.Sprintf("%s/%s", absolutePath, path))
 		}
 	}
 
-	fmt.Println(fmt.Sprintf("Start analysing the code in path: `%s`", *path))
-	index, pathIndex, importsIndex, err := services.AnalyseTheCode(*path, *ext, paths)
+	fmt.Println(fmt.Sprintf("Start analysing the code in path: `%s`", absolutePath))
+	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, *ext, paths)
 	if err != nil {
 		log.Fatal(err)
 	}

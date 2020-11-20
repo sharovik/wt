@@ -168,7 +168,7 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 }
 
 //GetIgnoredFilePaths used for generation of the list of ignored file paths, which will be ignored during the features search
-func GetIgnoredFilePaths(path string) (files []string, err error) {
+func GetIgnoredFilePaths(path string, absolutePath string) (files []string, err error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, nil
 	}
@@ -183,7 +183,7 @@ func GetIgnoredFilePaths(path string) (files []string, err error) {
 
 	for scanner.Scan() {
 		if scanner.Text() != "" {
-			files = append(files, scanner.Text())
+			files = append(files, fmt.Sprintf("%s/%s", absolutePath, scanner.Text()))
 		}
 	}
 
