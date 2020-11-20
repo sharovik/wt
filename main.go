@@ -20,7 +20,7 @@ const (
 	displayFull     = "full"
 	displayFeatures = "features"
 
-	appVersion = "v1.1.1"
+	appVersion = "v1.1.2"
 
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
