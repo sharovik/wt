@@ -118,20 +118,23 @@ func main() {
 			resultString += "\n"
 		}
 
+		res := ""
 		switch *displayTemplate {
 		case displayFull:
-			resultString += printFull(diff, absolutePath)
+			res = printFull(diff, absolutePath)
 			break
 		case displayFeatures:
-			resultString += printFeatures(diff, absolutePath)
+			res = printFeatures(diff, absolutePath)
 			break
 		}
 
-		if resultString == "" {
+		if res == "" {
 			resultString += "I found no features touched by these changes.\nPlease, make sure you define the features in these diff"
 		} else {
-			resultString += fmt.Sprintf("Please make sure you test these features before you merge `%s` branch into `%s`.", *workingBranch, *destinationBranch)
+			resultString += fmt.Sprintf("%s\nPlease make sure you test these features before you merge `%s` branch into `%s`.", res, *workingBranch, *destinationBranch)
 		}
+	} else {
+		resultString += fmt.Sprintf("\nThere is no diff between `%s` and `%s`", *workingBranch, *destinationBranch)
 	}
 
 	fmt.Println(resultString)
