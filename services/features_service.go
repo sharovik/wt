@@ -34,7 +34,16 @@ func CleanUpGlobalVars() {
 
 func setToFoundFeatures(feature dto.Feature) {
 	PF.FoundFeatures[feature.Name] = append(PF.FoundFeatures[feature.Name], feature)
-	PF.FoundFeaturesByFile[feature.FilePath] = append(PF.FoundFeaturesByFile[feature.FilePath], feature)
+	doesNotExists := true
+	for _, item := range PF.FoundFeaturesByFile[feature.FilePath] {
+		if item == feature {
+			doesNotExists = false
+		}
+	}
+
+	if doesNotExists {
+		PF.FoundFeaturesByFile[feature.FilePath] = append(PF.FoundFeaturesByFile[feature.FilePath], feature)
+	}
 }
 
 func extractFeatureType(text string) (featureType string, err error) {
