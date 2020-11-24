@@ -103,7 +103,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
+	totalFeaturesTouched, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
 
 	resultString := fmt.Sprintf(versionTemplate, appVersion)
 	if len(diff) > 0 {
@@ -122,10 +122,10 @@ func main() {
 		res := ""
 		switch *displayTemplate {
 		case displayFull:
-			res = printFull(diff, absolutePath)
+			res = printFull(totalFeaturesTouched, absolutePath)
 			break
 		case displayFeatures:
-			res = printFeatures(diff, absolutePath)
+			res = printFeatures(totalFeaturesTouched, absolutePath)
 			break
 		}
 
@@ -163,43 +163,44 @@ func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString stri
 	return
 }
 
-func printFull(files []string, absolutePath string) string {
-	resultString := ""
-	for _, file := range files {
-		file := strings.ReplaceAll(file, absolutePath + "/", "")
-		if len(services.PF.FoundFeaturesByFile[file]) > 0 {
-			resultString += fmt.Sprintf("Changes in file: '%s' can potentially touch next features:\n", file)
-			for _, feature := range services.PF.FoundFeaturesByFile[file] {
-				resultString += "------------------\n"
-				resultString += fmt.Sprintf("Feature: %s\n", feature.Name)
-				resultString += fmt.Sprintf("Code path: %s:%d\n", feature.FilePath, feature.Line)
-			}
-			resultString += "------------------\n"
+func printFull(files map[string][]dto.Feature, absolutePath string) string {
+	if len(files) == 0 {
+		return ""
+	}
+
+	resultString := "Below you can see the list of touched features:\n"
+	for file, features := range files {
+		if len(features) == 0 {
+			continue
 		}
+
+		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		for _, feature := range features {
+			resultString += "------------------\n"
+			resultString += fmt.Sprintf("Feature: %s\n", feature.Name)
+			resultString += fmt.Sprintf("Code path: %s:%d\n", feature.FilePath, feature.Line)
+		}
+		resultString += "------------------\n"
 	}
 
 	return resultString
 }
 
-func printFeatures(files []string, absolutePath string) string {
-	var featuresTouched = map[string][]string{}
-	for _, file := range files {
-		file := strings.ReplaceAll(file, absolutePath + "/", "")
-		if len(services.PF.FoundFeaturesByFile[file]) > 0 {
-			for _, feature := range services.PF.FoundFeaturesByFile[file] {
-				featuresTouched[file] = append(featuresTouched[file], feature.Name)
-			}
-		}
+func printFeatures(files map[string][]dto.Feature, absolutePath string) string {
+	if len(files) == 0 {
+		return "No features found.\n"
 	}
 
-	resultString := ""
-	if len(featuresTouched) > 0 {
-		resultString = "Below you can see the list of touched features:\n"
-		for file, features := range featuresTouched {
-			resultString += fmt.Sprintf("File: %s\n", file)
-			for _, feature := range features {
-				resultString += fmt.Sprintf("* %s\n", feature)
-			}
+	resultString := "Below you can see the list of touched features:\n"
+	for file, features := range files {
+		if len(features) == 0 {
+			continue
+		}
+
+		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		resultString += fmt.Sprintf("File: %s\n", file)
+		for _, feature := range features {
+			resultString += fmt.Sprintf("* %s\n", feature.Name)
 		}
 	} else {
 		resultString = "No features received.\n"
