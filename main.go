@@ -202,8 +202,6 @@ func printFeatures(files map[string][]dto.Feature, absolutePath string) string {
 		for _, feature := range features {
 			resultString += fmt.Sprintf("* %s\n", feature.Name)
 		}
-	} else {
-		resultString = "No features received.\n"
 	}
 
 	return resultString
