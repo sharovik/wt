@@ -9,7 +9,7 @@ build:
 
 build-cross-platform:
 	make vendor
-	env CGO_ENABLED=1 xgo --targets=darwin/*,linux/amd64,linux/386,windows/* --dest ./$(BIN_DIR)/ --out wt .
+	env CGO_ENABLED=0 xgo --targets=darwin/*,linux/amd64,linux/386,windows/* --dest ./$(BIN_DIR)/ --out wt .
 
 build-project-archive:
 	tar -czvf $(BIN_DIR)/wt.tar.gz $(BIN_DIR)
