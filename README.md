@@ -8,6 +8,16 @@ You define the path where application need to check the files. It goes through a
 - git - it will be used for branches compare and diff retrieving
 - fetch the destination branch before the `wt` command run
 
+## How to install
+1. Download the last binary file for your system. You can download [from here](https://github.com/sharovik/wt/tree/master/bin), or using cmd. Here an example of downloading for linux system via cmd, using `curl`:
+```
+curl https://raw.githubusercontent.com/sharovik/wt/master/bin/wt-linux-amd64 -o ./bin/wt
+```
+2. Give executable permissions for the binary file. Here an example of command for linux system:
+```
+chmod +x ./bin/wt
+```
+
 ## How to use
 In your code, please define the feature by writing of `@featureType {YOUR FEATURE NAME}` comment.
 ```php
@@ -23,7 +33,8 @@ function firstFunction() {
 
 Run the command to find the touched files:
 ```shell script
-./wt -path=. -workingBranch=my-brand-new-branch -fileExt=.php
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && git fetch origin master:refs/origin/master
+./bin/wt -fileExt=.php -workingBranch=$CURRENT_BRANCH -destinationBranch=origin/master
 ```
 
 Then you will see the output:
