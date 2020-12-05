@@ -30,8 +30,8 @@ var (
 
 	//AnalysedImportsIndex will be used for indexing of other imports used in your object
 	AnalysedImportsIndex = map[string][]string{}
-	MaxDeepLevel = DefaultMaxDeepLevel
-	An BaseAnalysisInterface
+	MaxDeepLevel         = DefaultMaxDeepLevel
+	An                   BaseAnalysisInterface
 )
 
 //FindUsage will retrieve the list of file paths where your entrypoint is used
@@ -49,4 +49,15 @@ func FindUsage(entrypoint string, usage []string, deepLevel int) []string {
 	}
 
 	return usage
+}
+
+func InitAnalysisService(ext string) {
+	switch ext {
+	case ".php":
+		An = PhpAnalysis{}
+		break
+	default:
+		An = DefaultAnalysis{}
+		break
+	}
 }

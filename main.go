@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/sharovik/wt/analysis"
-	"github.com/sharovik/wt/dto"
 	"log"
 	"path/filepath"
 	"strings"
+
+	"github.com/sharovik/wt/analysis"
+	"github.com/sharovik/wt/dto"
 
 	"github.com/sharovik/wt/services"
 )
@@ -15,7 +16,7 @@ import (
 const (
 	defaultIgnorePath        = ".gitignore"
 	defaultDestinationBranch = "master"
-	defaultIgnoredPaths = "tests"
+	defaultIgnoredPaths      = "tests"
 
 	displayFull     = "full"
 	displayFeatures = "features"
@@ -70,7 +71,7 @@ func main() {
 	analysis.MaxDeepLevel = *maxAnalysisDepth
 
 	loadVcs(*vcsType)
-	loadAnalysisService(*ext)
+	analysis.InitAnalysisService(*ext)
 
 	absolutePath, err := filepath.Abs(*path)
 	if err != nil {
@@ -151,7 +152,7 @@ func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString stri
 		if len(file.UsedIn) > 0 {
 			resultString += " touched by ["
 			for _, usedInFile := range file.UsedIn {
-				resultString += fmt.Sprintf("%s,",usedInFile.MainEntrypoint)
+				resultString += fmt.Sprintf("%s,", usedInFile.MainEntrypoint)
 			}
 			resultString += "]"
 		}
@@ -174,7 +175,7 @@ func printFull(files map[string][]dto.Feature, absolutePath string) string {
 			continue
 		}
 
-		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		file = strings.ReplaceAll(file, absolutePath+"/", "")
 		for _, feature := range features {
 			resultString += "------------------\n"
 			resultString += fmt.Sprintf("Feature: %s\n", feature.Name)
@@ -197,7 +198,7 @@ func printFeatures(files map[string][]dto.Feature, absolutePath string) string {
 			continue
 		}
 
-		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		file = strings.ReplaceAll(file, absolutePath+"/", "")
 		resultString += fmt.Sprintf("File: %s\n", file)
 		for _, feature := range features {
 			resultString += fmt.Sprintf("* %s\n", feature.Name)
@@ -211,17 +212,6 @@ func loadVcs(vcsType string) {
 	switch vcsType {
 	case "git":
 		vcs = services.Git{}
-		break
-	}
-}
-
-func loadAnalysisService(ext string) {
-	switch ext {
-	case ".php":
-		analysis.An = analysis.PhpAnalysis{}
-		break
-	default:
-		analysis.An = analysis.DefaultAnalysis{}
 		break
 	}
 }

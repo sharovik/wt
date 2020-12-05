@@ -3,16 +3,17 @@ package services
 import (
 	"bufio"
 	"fmt"
-	"github.com/sharovik/wt/analysis"
-	"github.com/sharovik/wt/dto"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/sharovik/wt/analysis"
+	"github.com/sharovik/wt/dto"
 )
 
 func isIgnoredPath(path string, ignoredPaths []string) bool {
 	for _, dirName := range ignoredPaths {
-		if strings.Contains(path, dirName) {
+		if dirName != "" && strings.Contains(path, dirName) {
 			return true
 		}
 	}
@@ -118,7 +119,6 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 			feature.Line = line
 			feature.Name = featureType
 			indexedFile.Features = append(indexedFile.Features, feature)
-			setToFoundFeatures(feature)
 		}
 
 		if entryPointSrc == "" {
