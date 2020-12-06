@@ -1,50 +1,18 @@
 package services
 
 import (
-	"github.com/sharovik/wt/analysis"
-	"github.com/sharovik/wt/dto"
 	"regexp"
 	"strings"
+
+	"github.com/sharovik/wt/analysis"
+	"github.com/sharovik/wt/dto"
 )
 
 const (
+	//FeatureAlias - the constant which identifies the feature alias which our parser will try to find in the strings
 	FeatureAlias     = "@featureType"
 	regexFeatureType = `(?i)(?:@featureType)(.*)`
 )
-
-var (
-	//PF object of ProjectFeatures configuration
-	PF = ProjectFeatures{
-		FoundFeatures:       map[string][]dto.Feature{},
-		FoundFeaturesByFile: map[string][]dto.Feature{},
-	}
-)
-
-//ProjectFeatures this is main struct which is used for generation of WT configuration
-type ProjectFeatures struct {
-	FoundFeatures       map[string][]dto.Feature `json:"found_features"`
-	FoundFeaturesByFile map[string][]dto.Feature `json:"found_features_by_file"`
-}
-
-//CleanUpGlobalVars method which cleanup the project features object attributes
-func CleanUpGlobalVars() {
-	PF.FoundFeatures = map[string][]dto.Feature{}
-	PF.FoundFeaturesByFile = map[string][]dto.Feature{}
-}
-
-func setToFoundFeatures(feature dto.Feature) {
-	PF.FoundFeatures[feature.Name] = append(PF.FoundFeatures[feature.Name], feature)
-	doesNotExists := true
-	for _, item := range PF.FoundFeaturesByFile[feature.FilePath] {
-		if item == feature {
-			doesNotExists = false
-		}
-	}
-
-	if doesNotExists {
-		PF.FoundFeaturesByFile[feature.FilePath] = append(PF.FoundFeaturesByFile[feature.FilePath], feature)
-	}
-}
 
 func extractFeatureType(text string) (featureType string, err error) {
 	re, err := regexp.Compile(regexFeatureType)
@@ -62,6 +30,7 @@ func extractFeatureType(text string) (featureType string, err error) {
 	return strings.TrimSpace(matches[1]), nil
 }
 
+//FindFeaturesInIndex method tries to find features in the prepared indexes
 func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouched map[string][]dto.Feature, toBeChecked map[string]dto.IndexedFile) {
 	var usage []string
 	potentiallyTouched := map[string]dto.IndexedFile{}
@@ -73,12 +42,8 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouch
 		}
 
 		relatedFile := analysis.AnalysedPathsIndex[file]
-		relativePath := strings.ReplaceAll(relatedFile.Path, absolutePath + "/", "")
+		relativePath := strings.ReplaceAll(relatedFile.Path, absolutePath+"/", "")
 		totalFeaturesTouched[relativePath] = relatedFile.Features
-
-		for _, feature := range relatedFile.Features {
-			setToFoundFeatures(feature)
-		}
 
 		usage = []string{}
 		usage = analysis.FindUsage(relatedFile.MainEntrypoint, usage, 0)
@@ -92,16 +57,13 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouch
 	}
 
 	for _, touchedFile := range potentiallyTouched {
-		relativePath := strings.ReplaceAll(touchedFile.Path, absolutePath + "/", "")
+		relativePath := strings.ReplaceAll(touchedFile.Path, absolutePath+"/", "")
 		if relativePath == "" {
 			continue
 		}
 
 		if len(touchedFile.Features) > 0 {
 			totalFeaturesTouched[relativePath] = touchedFile.Features
-			for _, feature := range touchedFile.Features {
-				setToFoundFeatures(feature)
-			}
 		} else {
 			toBeChecked[relativePath] = touchedFile
 		}

@@ -1,8 +1,9 @@
 package analysis
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPhpAnalysis_GetNeedleKey(t *testing.T) {
@@ -15,7 +16,7 @@ func TestPhpAnalysis_ExtractImport(t *testing.T) {
 	var (
 		php   = PhpAnalysis{}
 		cases = map[string]string{
-			`namespace App\Test\Test\Test;`: `App\Test\Test\Test`,
+			`namespace App\Test\Test\Test;`:    `App\Test\Test\Test`,
 			`namespace App\\Test\\Test\\Test;`: `App\\Test\\Test\\Test`,
 		}
 	)
@@ -31,14 +32,14 @@ func TestPhpAnalysis_ExtractImportUsage(t *testing.T) {
 	var (
 		php   = PhpAnalysis{}
 		cases = map[string]string{
-			`namespace App\Test\Test\Test`: `App\Test\Test\Test`,
+			`namespace App\Test\Test\Test`:    `App\Test\Test\Test`,
 			`namespace App\\Test\\Test\\Test`: `App\\Test\\Test\\Test`,
-			`App\\Test\\Test\\Test $test`: `App\\Test\\Test\\Test`,
-			`App\Test\Test\Test $test`: `App\Test\Test\Test`,
-			`App\Test::$test`: `App\Test`,
-			`App\\Test::$test`: `App\\Test`,
-			`App\\Test::method()`: `App\\Test`,
-			`App\Test::method()`: `App\Test`,
+			`App\\Test\\Test\\Test $test`:     `App\\Test\\Test\\Test`,
+			`App\Test\Test\Test $test`:        `App\Test\Test\Test`,
+			`App\Test::$test`:                 `App\Test`,
+			`App\\Test::$test`:                `App\\Test`,
+			`App\\Test::method()`:             `App\\Test`,
+			`App\Test::method()`:              `App\Test`,
 		}
 	)
 
@@ -53,15 +54,15 @@ func TestPhpAnalysis_FindMainEntrypoint(t *testing.T) {
 	var (
 		php   = PhpAnalysis{}
 		cases = map[string]string{
-			`class TestClass `: `TestClass`,
+			`class TestClass `:                         `TestClass`,
 			`class TestClass extends OtherTestClass {`: `TestClass`,
 			`class TestClass implements SomeInterface`: `TestClass`,
-			`abstract class TestClass `: `TestClass`,
-			`abstract class TestClass`: `TestClass`,
-			`interface TestInterface`: `TestInterface`,
-			`interface TestInterface `: `TestInterface`,
-			`trait TestTrait `: `TestTrait`,
-			`trait TestTrait`: `TestTrait`,
+			`abstract class TestClass `:                `TestClass`,
+			`abstract class TestClass`:                 `TestClass`,
+			`interface TestInterface`:                  `TestInterface`,
+			`interface TestInterface `:                 `TestInterface`,
+			`trait TestTrait `:                         `TestTrait`,
+			`trait TestTrait`:                          `TestTrait`,
 		}
 	)
 

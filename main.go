@@ -3,11 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+	"runtime/pprof"
+	"strings"
+
 	"github.com/sharovik/wt/analysis"
 	"github.com/sharovik/wt/dto"
-	"log"
-	"path/filepath"
-	"strings"
 
 	"github.com/sharovik/wt/services"
 )
@@ -15,7 +19,7 @@ import (
 const (
 	defaultIgnorePath        = ".gitignore"
 	defaultDestinationBranch = "master"
-	defaultIgnoredPaths = "tests"
+	defaultIgnoredPaths      = "tests"
 
 	displayFull     = "full"
 	displayFeatures = "features"
@@ -39,8 +43,22 @@ func main() {
 	maxAnalysisDepth := flag.Int("maxAnalysisDepth", analysis.DefaultMaxDeepLevel, fmt.Sprintf("The maximum analysis code depth will be used during the code usage analysing. Default is: %d", analysis.DefaultMaxDeepLevel))
 	withToBeChecked := flag.Bool("withToBeChecked", false, fmt.Sprintf("Display or not the files which should be covered by features annotation. Default is: %v", false))
 	version := flag.Bool("version", false, "Shows the app version.")
+	cpuProfile := flag.String("cpuProfile", "", "write cpu profile to `file`")
+	memProfile := flag.String("memProfile", "", "write memory profile to `file`")
 
 	flag.Parse()
+
+	if *cpuProfile != "" {
+		f, err := os.Create(*cpuProfile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close() // error handling omitted for example
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	if *version {
 		fmt.Println(fmt.Sprintf(versionTemplate, appVersion))
@@ -70,7 +88,7 @@ func main() {
 	analysis.MaxDeepLevel = *maxAnalysisDepth
 
 	loadVcs(*vcsType)
-	loadAnalysisService(*ext)
+	analysis.InitAnalysisService(*ext)
 
 	absolutePath, err := filepath.Abs(*path)
 	if err != nil {
@@ -139,6 +157,18 @@ func main() {
 	}
 
 	fmt.Println(resultString)
+
+	if *memProfile != "" {
+		f, err := os.Create(*memProfile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		defer f.Close() // error handling omitted for example
+		runtime.GC() // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
+	}
 }
 
 func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString string) {
@@ -151,7 +181,7 @@ func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString stri
 		if len(file.UsedIn) > 0 {
 			resultString += " touched by ["
 			for _, usedInFile := range file.UsedIn {
-				resultString += fmt.Sprintf("%s,",usedInFile.MainEntrypoint)
+				resultString += fmt.Sprintf("%s,", usedInFile.MainEntrypoint)
 			}
 			resultString += "]"
 		}
@@ -174,7 +204,7 @@ func printFull(files map[string][]dto.Feature, absolutePath string) string {
 			continue
 		}
 
-		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		file = strings.ReplaceAll(file, absolutePath+"/", "")
 		for _, feature := range features {
 			resultString += "------------------\n"
 			resultString += fmt.Sprintf("Feature: %s\n", feature.Name)
@@ -197,7 +227,7 @@ func printFeatures(files map[string][]dto.Feature, absolutePath string) string {
 			continue
 		}
 
-		file = strings.ReplaceAll(file, absolutePath + "/", "")
+		file = strings.ReplaceAll(file, absolutePath+"/", "")
 		resultString += fmt.Sprintf("File: %s\n", file)
 		for _, feature := range features {
 			resultString += fmt.Sprintf("* %s\n", feature.Name)
@@ -211,17 +241,6 @@ func loadVcs(vcsType string) {
 	switch vcsType {
 	case "git":
 		vcs = services.Git{}
-		break
-	}
-}
-
-func loadAnalysisService(ext string) {
-	switch ext {
-	case ".php":
-		analysis.An = analysis.PhpAnalysis{}
-		break
-	default:
-		analysis.An = analysis.DefaultAnalysis{}
 		break
 	}
 }

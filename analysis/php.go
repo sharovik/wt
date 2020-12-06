@@ -11,8 +11,8 @@ type PhpAnalysis struct {
 }
 
 const (
-	regexNeedlePhp = `(?im)((?:\\{1,2}\w+|\w+\\{1,2})(?:\w+\\{0,2})+)`
-	regexNamespace = `(?im)(?:namespace\s+)(.*)(?:[;])`
+	regexNeedlePhp  = `(?im)((?:\\{1,2}\w+|\w+\\{1,2})(?:\w+\\{0,2})+)`
+	regexNamespace  = `(?im)(?:namespace\s+)(.*)(?:[;])`
 	regexEntryPoint = `(?im)(?:class\s+)(\w+)|(?:trait\s+)(\w+)|(?:interface\s+)(\w+)`
 )
 
