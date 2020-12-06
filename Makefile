@@ -7,12 +7,9 @@ build:
 	make vendor
 	go build -o ./bin/wt ./main.go
 
-build-cross-platform:
+release:
 	make vendor
 	env CGO_ENABLED=0 xgo --targets=darwin/*,linux/amd64,linux/386,windows/* --dest ./$(BIN_DIR)/ --out wt .
-
-build-project-archive:
-	tar -czvf $(BIN_DIR)/wt.tar.gz $(BIN_DIR)
 
 lint:
 	golint -set_exit_status ./services/...
@@ -33,7 +30,3 @@ code-check:
 code-clean:
 	make imports
 	make format
-
-prepare-release:
-	make build-cross-platform
-	make build-project-archive

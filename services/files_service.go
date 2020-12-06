@@ -91,7 +91,7 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 
 	// Splits on newlines by default.
 	scanner := bufio.NewScanner(fsFile)
-	buf := make([]byte, 0, 64*1024)
+	buf := make([]byte, 0, bufio.MaxScanTokenSize)
 	scanner.Buffer(buf, 1024*1024)
 
 	line := 1
@@ -100,6 +100,12 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 	indexedFile.OtherImports = map[string]string{}
 	mainEntrypointSrc := ""
 	entryPointSrc := ""
+
+	relPath, err := filepath.Rel(basePath, filePath)
+	if err != nil {
+		return indexedFile, err
+	}
+
 	for scanner.Scan() {
 		text := scanner.Text()
 		//We check for features annotation
@@ -107,11 +113,6 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 			featureType, err := extractFeatureType(scanner.Text())
 			if err != nil || featureType == "" {
 				continue
-			}
-
-			relPath, err := filepath.Rel(basePath, filePath)
-			if err != nil {
-				return indexedFile, err
 			}
 
 			feature := dto.Feature{}

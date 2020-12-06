@@ -40,6 +40,10 @@ func FindUsage(entrypoint string, usage []string, deepLevel int) []string {
 		return usage
 	}
 
+	if exists(usage, entrypoint) {
+		return usage
+	}
+
 	usage = append(usage, AnalysedImportsIndex[entrypoint]...)
 	if deepLevel <= MaxDeepLevel {
 		deepLevel += 1
@@ -49,6 +53,16 @@ func FindUsage(entrypoint string, usage []string, deepLevel int) []string {
 	}
 
 	return usage
+}
+
+func exists(a []string, n string) (exists bool) {
+	for _, p := range a {
+		if p == n {
+			return true
+		}
+	}
+
+	return exists
 }
 
 func InitAnalysisService(ext string) {
