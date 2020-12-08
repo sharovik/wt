@@ -24,7 +24,7 @@ const (
 	displayFull     = "full"
 	displayFeatures = "features"
 
-	appVersion = "v1.1.3"
+	appVersion = "v1.1.4"
 
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
