@@ -2,6 +2,7 @@ package printout
 
 import (
 	"fmt"
+	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/dto"
 	"strings"
 )
@@ -9,20 +10,25 @@ import (
 //FeaturesPrintout the full printout struct
 type FeaturesPrintout struct {
 	AbsolutePath string
+	Config configuration.Config
 	PrintToBeCheckedDetails bool
 	TotalFeaturesTouched map[string][]dto.Feature
 	ToBeChecked map[string]dto.IndexedFile
 }
 
-func (s FeaturesPrintout) SetAbsolutePath(path string) {
+func (s *FeaturesPrintout) SetAbsolutePath(path string) {
 	s.AbsolutePath = path
 }
 
-func (s FeaturesPrintout) SetTotalFeaturesTouched(features map[string][]dto.Feature) {
+func (s *FeaturesPrintout) SetConfig(config configuration.Config) {
+	s.Config = config
+}
+
+func (s *FeaturesPrintout) SetTotalFeaturesTouched(features map[string][]dto.Feature) {
 	s.TotalFeaturesTouched = features
 }
 
-func (s FeaturesPrintout) SetToBeChecked(files map[string]dto.IndexedFile) {
+func (s *FeaturesPrintout) SetToBeChecked(files map[string]dto.IndexedFile) {
 	s.ToBeChecked = files
 }
 
@@ -31,10 +37,10 @@ func (s FeaturesPrintout) GetToBeChecked() map[string]dto.IndexedFile {
 }
 
 func (s FeaturesPrintout) ToBeCheckedText() string {
-	return generateToBeCheckedText(s)
+	return generateToBeCheckedText(&s)
 }
 
-func (s FeaturesPrintout) WithToBeCheckedDetails() {
+func (s *FeaturesPrintout) WithToBeCheckedDetails() {
 	s.PrintToBeCheckedDetails = true
 }
 
@@ -43,22 +49,31 @@ func (s FeaturesPrintout) IsToBeCheckedDetailsEnabled() bool {
 }
 
 func (s FeaturesPrintout) Text() string {
+
 	if len(s.TotalFeaturesTouched) == 0 {
-		return "No features found.\n"
+		return WarningText("No features found.\n")
 	}
 
-	resultString := "Below you can see the list of touched features:\n"
+	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\nBelow you can see the list of touched features:\n\n", s.AbsolutePath))
+	alreadyAdded := map[string]string{}
 	for file, features := range s.TotalFeaturesTouched {
 		if len(features) == 0 {
 			continue
 		}
 
 		file = strings.ReplaceAll(file, s.AbsolutePath+"/", "")
-		resultString += fmt.Sprintf("File: %s\n", file)
 		for _, feature := range features {
-			resultString += fmt.Sprintf("* %s\n", feature.Name)
+			if alreadyAdded[feature.Name] != "" {
+				continue
+			}
+
+			resultString += NormalText(fmt.Sprintf("* %s (file: %s)\n", feature.Name, file))
+			alreadyAdded[feature.Name] = feature.Name
 		}
 	}
+
+	resultString += InfoText(fmt.Sprintf("%s", s.ToBeCheckedText()))
+	resultString += WarningText(fmt.Sprintf("\nPlease make sure you test these features before you merge `%s` branch into `%s`.", s.Config.WorkingBranch, s.Config.DestinationBranch))
 
 	return resultString
 }

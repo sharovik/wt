@@ -4,13 +4,20 @@ import (
 	"flag"
 	"fmt"
 	"github.com/sharovik/wt/analysis"
+	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/services/printout"
+	"log"
+	"os"
 )
 
 const (
 	defaultIgnorePath        = ".gitignore"
 	defaultDestinationBranch = "master"
 	defaultIgnoredPaths      = "tests"
+
+	appVersion = "v1.1.4"
+
+	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
 
 type Service struct {
@@ -59,4 +66,52 @@ func (s *Service) ParseArgs() {
 	s.Version = *version
 	s.CpuProfile = *cpuProfile
 	s.MemProfile = *memProfile
+
+	s.loadDefaults()
+	s.initConfiguration()
+}
+
+func (s Service) initConfiguration() {
+	configuration.C = configuration.Config{
+		WorkingBranch:      s.WorkingBranch,
+		DestinationBranch:  s.DestinationBranch,
+		VcsType:            s.VcsType,
+		Path:               s.Path,
+		Ext:                s.Ext,
+		PathToIgnoreFile:   s.PathToIgnoreFile,
+		DisplayTemplate:    s.DisplayTemplate,
+		IgnoreFromAnalysis: s.IgnoreFromAnalysis,
+		MaxAnalysisDepth:   s.MaxAnalysisDepth,
+		WithToBeChecked:    s.WithToBeChecked,
+		Version:            s.Version,
+		CpuProfile:         s.CpuProfile,
+		MemProfile:         s.MemProfile,
+	}
+}
+
+func (s *Service) loadDefaults() {
+	if s.Version {
+		fmt.Println(fmt.Sprintf(versionTemplate, appVersion))
+		os.Exit(0)
+	}
+
+	if s.VcsType == "" {
+		log.Fatal(fmt.Errorf("The vcs should not be empty "))
+	}
+
+	if s.Path == "" {
+		s.Path = "."
+	}
+
+	if s.PathToIgnoreFile == "" {
+		s.PathToIgnoreFile = defaultIgnorePath
+	}
+
+	if s.DisplayTemplate == "" {
+		s.DisplayTemplate = printout.DisplayFeatures
+	}
+
+	if s.WorkingBranch == "" || s.DestinationBranch == "" {
+		log.Fatal(fmt.Errorf("Working branch and destination branch should not be empty. Please make sure you define them. "))
+	}
 }

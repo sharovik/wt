@@ -2,6 +2,7 @@ package printout
 
 import (
 	"fmt"
+	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/dto"
 	"github.com/sharovik/wt/services"
 )
@@ -14,6 +15,7 @@ const (
 type BasePrintoutInterface interface {
 	SetTotalFeaturesTouched(totalFeaturesTouched map[string][]dto.Feature)
 	SetAbsolutePath(path string)
+	SetConfig(config configuration.Config)
 	SetToBeChecked(files map[string]dto.IndexedFile)
 	GetToBeChecked() map[string]dto.IndexedFile
 	WithToBeCheckedDetails()
@@ -27,15 +29,13 @@ func generateToBeCheckedText(obj BasePrintoutInterface) string {
 		return ""
 	}
 
-	resultString := fmt.Sprintf("Your changes can potentially touch the functionality in the `%d` files.", len(obj.GetToBeChecked()))
+	resultString := fmt.Sprintf("\n\n\nYour changes can potentially touch the functionality in the `%d` files.", len(obj.GetToBeChecked()))
 	if obj.IsToBeCheckedDetailsEnabled() {
 		resultString += fmt.Sprintf("\nPlease check the following files:\n\n")
 		resultString += fmt.Sprintf("%s\n\n", generateToBeCheckedDetails(obj.GetToBeChecked()))
 	} else {
-		resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.", services.FeatureAlias)
+		resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.\n", services.FeatureAlias)
 	}
-
-	resultString += "\n\n"
 
 	return resultString
 }
@@ -62,23 +62,25 @@ func generateToBeCheckedDetails(toBeChecked map[string]dto.IndexedFile) (resultS
 	return
 }
 
-func GeneratePrintoutObj(displayType string, totalFeaturesTouched map[string][]dto.Feature, path string, toBeChecked map[string]dto.IndexedFile) (BasePrintoutInterface, error) {
+func GeneratePrintoutObj(displayType string) (BasePrintoutInterface, error) {
 	switch displayType {
 	case DisplayFull:
-		obj := new(FullPrintout)
-		obj.SetAbsolutePath(path)
-		obj.SetToBeChecked(toBeChecked)
-		obj.SetTotalFeaturesTouched(totalFeaturesTouched)
-
-		return obj, nil
+		return &FullPrintout{}, nil
 	case DisplayFeatures:
-		obj := new(FeaturesPrintout)
-		obj.SetAbsolutePath(path)
-		obj.SetToBeChecked(toBeChecked)
-		obj.SetTotalFeaturesTouched(totalFeaturesTouched)
-
-		return obj, nil
+		return &FeaturesPrintout{}, nil
 	}
 
 	return nil, fmt.Errorf("Failed to generate printout obj. ")
+}
+
+func InfoText(text string) string {
+	return fmt.Sprintf("\033[1;32m%s\033[0m", text)
+}
+
+func NormalText(text string) string {
+	return fmt.Sprintf("\033[1;36m%s\033[0m", text)
+}
+
+func WarningText(text string) string {
+	return fmt.Sprintf("\033[1;33m%s\033[0m", text)
 }
