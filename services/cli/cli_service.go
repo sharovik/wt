@@ -15,7 +15,7 @@ const (
 	defaultDestinationBranch = "master"
 	defaultIgnoredPaths      = "tests"
 
-	appVersion = "v1.1.4"
+	appVersion = "v1.1.5"
 
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
