@@ -2,6 +2,7 @@ package printout
 
 import (
 	"fmt"
+
 	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/dto"
 	"github.com/sharovik/wt/services"
