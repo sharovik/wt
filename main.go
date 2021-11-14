@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"github.com/sharovik/wt/services/printout"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,6 +14,7 @@ import (
 	"github.com/sharovik/wt/dto"
 
 	"github.com/sharovik/wt/services"
+	"github.com/sharovik/wt/services/cli"
 )
 
 const (
@@ -29,27 +30,16 @@ const (
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
 
-var vcs services.VcsInterface
+var (
+	vcs        services.VcsInterface
+	cliService = cli.Service{}
+)
 
 func main() {
-	workingBranch := flag.String("workingBranch", "", "Working branch which will be compared with the destination branch.")
-	destinationBranch := flag.String("destinationBranch", defaultDestinationBranch, "Destination branch with which we will compare selected working branch.")
-	vcsType := flag.String("vcs", "git", "The type of vcs which will be used for retrieving diff information.")
-	path := flag.String("path", ".", "The type of vcs which will be used for retrieving diff information.")
-	ext := flag.String("fileExt", "", "The type of extension of the diff which we need to check.")
-	pathToIgnoreFile := flag.String("pathToIgnoreFile", defaultIgnorePath, fmt.Sprintf("The path to file, where line-by-line written the list of paths which should be ignored. Default it's: %s", defaultIgnorePath))
-	displayTemplate := flag.String("displayTemplate", displayFeatures, fmt.Sprintf("The view which will be used for display results. Default is: %s", displayFeatures))
-	ignoreFromAnalysis := flag.String("ignoreFromAnalysis", defaultIgnoredPaths, fmt.Sprintf("The list of folders/files separated by comma, which will be ignored during the files analysis. Default is: %s", defaultIgnoredPaths))
-	maxAnalysisDepth := flag.Int("maxAnalysisDepth", analysis.DefaultMaxDeepLevel, fmt.Sprintf("The maximum analysis code depth will be used during the code usage analysing. Default is: %d", analysis.DefaultMaxDeepLevel))
-	withToBeChecked := flag.Bool("withToBeChecked", false, fmt.Sprintf("Display or not the files which should be covered by features annotation. Default is: %v", false))
-	version := flag.Bool("version", false, "Shows the app version.")
-	cpuProfile := flag.String("cpuProfile", "", "write cpu profile to `file`")
-	memProfile := flag.String("memProfile", "", "write memory profile to `file`")
+	cliService.ParseArgs()
 
-	flag.Parse()
-
-	if *cpuProfile != "" {
-		f, err := os.Create(*cpuProfile)
+	if cliService.CpuProfile != "" {
+		f, err := os.Create(cliService.CpuProfile)
 		if err != nil {
 			log.Fatal("could not create CPU profile: ", err)
 		}
@@ -60,54 +50,54 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	if *version {
+	if cliService.Version {
 		fmt.Println(fmt.Sprintf(versionTemplate, appVersion))
 		return
 	}
 
-	if *vcsType == "" {
+	if cliService.VcsType == "" {
 		log.Fatal(fmt.Errorf("The vcs should not be empty "))
 	}
 
-	if *path == "" {
-		*path = "."
+	if cliService.Path == "" {
+		cliService.Path = "."
 	}
 
-	if *pathToIgnoreFile == "" {
-		*pathToIgnoreFile = defaultIgnorePath
+	if cliService.PathToIgnoreFile == "" {
+		cliService.PathToIgnoreFile = defaultIgnorePath
 	}
 
-	if *displayTemplate == "" {
-		*displayTemplate = displayFeatures
+	if cliService.DisplayTemplate == "" {
+		cliService.DisplayTemplate = displayFeatures
 	}
 
-	if *workingBranch == "" || *destinationBranch == "" {
+	if cliService.WorkingBranch == "" || cliService.DestinationBranch == "" {
 		log.Fatal(fmt.Errorf("Working branch and destination branch should not be empty. Please make sure you define them. "))
 	}
 
-	analysis.MaxDeepLevel = *maxAnalysisDepth
+	analysis.MaxDeepLevel = cliService.MaxAnalysisDepth
 
-	loadVcs(*vcsType)
-	analysis.InitAnalysisService(*ext)
+	loadVcs(cliService.VcsType)
+	analysis.InitAnalysisService(cliService.Ext)
 
-	absolutePath, err := filepath.Abs(*path)
+	absolutePath, err := filepath.Abs(cliService.Path)
 	if err != nil {
 		return
 	}
 
-	paths, err := services.GetIgnoredFilePaths(*pathToIgnoreFile, absolutePath)
+	paths, err := services.GetIgnoredFilePaths(cliService.PathToIgnoreFile, absolutePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if *ignoreFromAnalysis != "" {
-		for _, path := range strings.Split(*ignoreFromAnalysis, ",") {
+	if cliService.IgnoreFromAnalysis != "" {
+		for _, path := range strings.Split(cliService.IgnoreFromAnalysis, ",") {
 			paths = append(paths, fmt.Sprintf("%s/%s", absolutePath, path))
 		}
 	}
 
 	fmt.Println(fmt.Sprintf("Start analysing the code in path: `%s`", absolutePath))
-	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, *ext, paths)
+	index, pathIndex, importsIndex, err := services.AnalyseTheCode(absolutePath, cliService.Ext, paths)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -116,7 +106,7 @@ func main() {
 	analysis.AnalysedPathsIndex = pathIndex
 	analysis.AnalysedImportsIndex = importsIndex
 
-	diff, err := vcs.Diff(absolutePath, *workingBranch, *destinationBranch)
+	diff, err := vcs.Diff(absolutePath, cliService.WorkingBranch, cliService.DestinationBranch)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,42 +114,39 @@ func main() {
 	totalFeaturesTouched, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
 
 	resultString := fmt.Sprintf(versionTemplate, appVersion)
-	if len(diff) > 0 {
+	if len(diff) == 0 {
+		displayObj, err := printout.GeneratePrintoutObj(cliService.DisplayTemplate, totalFeaturesTouched, absolutePath, toBeChecked)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		if len(toBeChecked) > 0 {
 			resultString += fmt.Sprintf("Your changes can potentially touch the functionality in the `%d` files.", len(toBeChecked))
-			if *withToBeChecked {
+			if cliService.WithToBeChecked {
 				resultString += fmt.Sprintf("\nPlease check the following files:\n\n")
 				resultString += fmt.Sprintf("%s\n\n", printToBeChecked(toBeChecked))
 			} else {
 				resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.", services.FeatureAlias)
 			}
 
-			resultString += "\n"
+			resultString += "\n\n"
 		}
 
-		res := ""
-		switch *displayTemplate {
-		case displayFull:
-			res = printFull(totalFeaturesTouched, absolutePath)
-			break
-		case displayFeatures:
-			res = printFeatures(totalFeaturesTouched, absolutePath)
-			break
-		}
+		res := displayObj.Text()
 
 		if res == "" {
 			resultString += "I found no features touched by these changes.\nPlease, make sure you define the features in these diff"
 		} else {
-			resultString += fmt.Sprintf("%s\nPlease make sure you test these features before you merge `%s` branch into `%s`.", res, *workingBranch, *destinationBranch)
+			resultString += fmt.Sprintf("%s\nPlease make sure you test these features before you merge `%s` branch into `%s`.", res, cliService.WorkingBranch, cliService.DestinationBranch)
 		}
 	} else {
-		resultString += fmt.Sprintf("\nThere is no diff between `%s` and `%s`", *workingBranch, *destinationBranch)
+		resultString += fmt.Sprintf("\nThere is no diff between `%s` and `%s`", cliService.WorkingBranch, cliService.DestinationBranch)
 	}
 
 	fmt.Println(resultString)
 
-	if *memProfile != "" {
-		f, err := os.Create(*memProfile)
+	if cliService.MemProfile != "" {
+		f, err := os.Create(cliService.MemProfile)
 		if err != nil {
 			log.Fatal("could not create memory profile: ", err)
 		}
@@ -191,50 +178,6 @@ func printToBeChecked(toBeChecked map[string]dto.IndexedFile) (resultString stri
 
 	resultString += fmt.Sprintf("\n !!!Warning!!! Please make sure you add `%s` annotation to these files.", services.FeatureAlias)
 	return
-}
-
-func printFull(files map[string][]dto.Feature, absolutePath string) string {
-	if len(files) == 0 {
-		return ""
-	}
-
-	resultString := "Below you can see the list of touched features:\n"
-	for file, features := range files {
-		if len(features) == 0 {
-			continue
-		}
-
-		file = strings.ReplaceAll(file, absolutePath+"/", "")
-		for _, feature := range features {
-			resultString += "------------------\n"
-			resultString += fmt.Sprintf("Feature: %s\n", feature.Name)
-			resultString += fmt.Sprintf("Code path: %s:%d\n", feature.FilePath, feature.Line)
-		}
-		resultString += "------------------\n"
-	}
-
-	return resultString
-}
-
-func printFeatures(files map[string][]dto.Feature, absolutePath string) string {
-	if len(files) == 0 {
-		return "No features found.\n"
-	}
-
-	resultString := "Below you can see the list of touched features:\n"
-	for file, features := range files {
-		if len(features) == 0 {
-			continue
-		}
-
-		file = strings.ReplaceAll(file, absolutePath+"/", "")
-		resultString += fmt.Sprintf("File: %s\n", file)
-		for _, feature := range features {
-			resultString += fmt.Sprintf("* %s\n", feature.Name)
-		}
-	}
-
-	return resultString
 }
 
 func loadVcs(vcsType string) {
