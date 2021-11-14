@@ -49,11 +49,14 @@ func (s FullPrintout) ToBeCheckedText() string {
 }
 
 func (s FullPrintout) Text() string {
+	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\n", s.AbsolutePath))
+
 	if len(s.TotalFeaturesTouched) == 0 {
-		return WarningText("No features found.\n")
+		resultString += WarningText("No features found.")
+		return resultString
 	}
 
-	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\nBelow you can see the list of touched features:\n\n", s.AbsolutePath))
+	resultString += InfoText("Below you can see the list of touched features:\n\n")
 	for file, features := range s.TotalFeaturesTouched {
 		if len(features) == 0 {
 			continue
