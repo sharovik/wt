@@ -2,18 +2,19 @@ package printout
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/dto"
-	"strings"
 )
 
 //FeaturesPrintout the full printout struct
 type FeaturesPrintout struct {
-	AbsolutePath string
-	Config configuration.Config
+	AbsolutePath            string
+	Config                  configuration.Config
 	PrintToBeCheckedDetails bool
-	TotalFeaturesTouched map[string][]dto.Feature
-	ToBeChecked map[string]dto.IndexedFile
+	TotalFeaturesTouched    map[string][]dto.Feature
+	ToBeChecked             map[string]dto.IndexedFile
 }
 
 func (s *FeaturesPrintout) SetAbsolutePath(path string) {

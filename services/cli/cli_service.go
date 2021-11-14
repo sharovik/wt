@@ -3,11 +3,12 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/sharovik/wt/analysis"
 	"github.com/sharovik/wt/configuration"
 	"github.com/sharovik/wt/services/printout"
-	"log"
-	"os"
 )
 
 const (

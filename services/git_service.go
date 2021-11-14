@@ -17,7 +17,9 @@ type VcsInterface interface {
 type Git struct {
 }
 
-const (regexpParseFileNames = `(?im)(?:[A-Z]\s+)(.*)`)
+const (
+	regexpParseFileNames = `(?im)(?:[A-Z]\s+)(.*)`
+)
 
 //Diff the main method which is used for diff files get
 func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, err error) {

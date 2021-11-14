@@ -38,7 +38,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && git fetch origin master:ref
 ```
 
 Then you will see the output:
-![Small demo](documentation/images/demo.jpg)
+![Small demo](documentation/images/demo-features.png)
 
 ## Available command args
 - `destinationBranch` (string)
@@ -61,6 +61,8 @@ The list of folders/files comma-separated, which will be ignored during the code
 The maximum analysis code depth will be used during the code usage analysing.  Default is: `2`
 - `withToBeChecked` (bool)
 Display or not the files which needs to be covered by features annotation. Default is: `false`
+- `version` (bool)
+To display the current version of the application
 
 ## Supported languages
 Currently, the application supports all languages where it's possible to define the annotations like `#@featureType test` or `//@featureType test` or even `/* @featureType test */`!
