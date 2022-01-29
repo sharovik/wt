@@ -60,12 +60,10 @@ func (s JsonPrintout) Text() string {
 		ToBeChecked:          s.ToBeChecked,
 	}
 
-	outputStr := ""
 	byteStr, err := json.Marshal(obj)
 	if err != nil {
-		outputStr += fmt.Sprintf("Error: %s", err)
+		return fmt.Sprintf("Error: %s", err)
 	}
 
-	outputStr = string(byteStr)
-	return outputStr
+	return string(byteStr)
 }
