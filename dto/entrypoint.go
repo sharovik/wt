@@ -6,5 +6,5 @@ type IndexedFile struct {
 	Features       []Feature         `json:"features"`
 	MainEntrypoint string            `json:"main_entrypoint"`
 	OtherImports   map[string]string `json:"other_imports"`
-	UsedIn         []IndexedFile
+	UsedIn         []IndexedFile `json:"used_in"`
 }

@@ -11,6 +11,7 @@ import (
 const (
 	DisplayFull     = "full"
 	DisplayFeatures = "features"
+	DisplayJson = "json"
 )
 
 type BasePrintoutInterface interface {
@@ -69,6 +70,8 @@ func GeneratePrintoutObj(displayType string) (BasePrintoutInterface, error) {
 		return &FullPrintout{}, nil
 	case DisplayFeatures:
 		return &FeaturesPrintout{}, nil
+	case DisplayJson:
+		return &JsonPrintout{}, nil
 	}
 
 	return nil, fmt.Errorf("Failed to generate printout obj. ")
