@@ -25,8 +25,8 @@ var (
 func main() {
 	cliService.ParseArgs()
 
-	if cliService.CpuProfile != "" {
-		f, err := os.Create(cliService.CpuProfile)
+	if cliService.CPUProfile != "" {
+		f, err := os.Create(cliService.CPUProfile)
 		if err != nil {
 			log.Fatal("could not create CPU profile: ", err)
 		}
@@ -72,23 +72,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	totalFeaturesTouched, toBeChecked := services.FindFeaturesInIndex(diff, absolutePath)
+	analysisResult := services.FindFeaturesInIndex(diff, absolutePath)
 
-	displayObj, err := printout.GeneratePrintoutObj(cliService.DisplayTemplate)
+	displayObj, err := printout.FromType(cliService.DisplayTemplate)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	displayObj.SetToBeChecked(toBeChecked)
-	displayObj.SetTotalFeaturesTouched(totalFeaturesTouched)
+	displayObj.SetToBeChecked(analysisResult.ToBeChecked)
+	displayObj.SetTotalFeaturesTouched(analysisResult.TotalFeaturesTouched)
 	displayObj.SetAbsolutePath(absolutePath)
 	displayObj.SetConfig(configuration.C)
+	displayObj.SetProjectsToCheck(analysisResult.ProjectsToCheck)
 
 	if cliService.WithToBeChecked {
 		displayObj.WithToBeCheckedDetails()
 	}
 
-	if len(totalFeaturesTouched) == 0 {
+	if len(analysisResult.TotalFeaturesTouched) == 0 {
 		fmt.Println(displayObj.Text())
 
 		if cliService.MemProfile != "" {

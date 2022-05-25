@@ -11,7 +11,11 @@ import (
 const (
 	//FeatureAlias - the constant which identifies the feature alias which our parser will try to find in the strings
 	FeatureAlias     = "@featureType"
+
+	//ProjectAlias - the constant for project annotation search
+	ProjectAlias     = "@project"
 	regexFeatureType = `(?i)(?:@featureType)(.*)`
+	regexProject     = `(?i)(?:@project)(.*)`
 )
 
 func extractFeatureType(text string) (featureType string, err error) {
@@ -30,12 +34,33 @@ func extractFeatureType(text string) (featureType string, err error) {
 	return strings.TrimSpace(matches[1]), nil
 }
 
+func extractProjects(text string) (project []string, err error) {
+	re, err := regexp.Compile(regexProject)
+
+	if err != nil {
+		return
+	}
+
+	matches := re.FindStringSubmatch(text)
+
+	if len(matches) != 2 {
+		return
+	}
+
+	projectAnnotationValue := strings.TrimSpace(matches[1])
+	if "" == projectAnnotationValue {
+		return
+	}
+
+	return strings.Split(projectAnnotationValue, ","), nil
+}
+
 //FindFeaturesInIndex method tries to find features in the prepared indexes
-func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouched map[string][]dto.Feature, toBeChecked map[string]dto.IndexedFile) {
+func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.AnalysisResult) {
 	var usage []string
 	potentiallyTouched := map[string]dto.IndexedFile{}
-	totalFeaturesTouched = map[string][]dto.Feature{}
-	toBeChecked = map[string]dto.IndexedFile{}
+	result.TotalFeaturesTouched = map[string][]dto.Feature{}
+	result.ToBeChecked = map[string]dto.IndexedFile{}
 	for _, file := range diff {
 		if analysis.AnalysedPathsIndex[file].Path == "" {
 			continue
@@ -43,7 +68,8 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouch
 
 		relatedFile := analysis.AnalysedPathsIndex[file]
 		relativePath := strings.ReplaceAll(relatedFile.Path, absolutePath+"/", "")
-		totalFeaturesTouched[relativePath] = relatedFile.Features
+		result.TotalFeaturesTouched[relativePath] = relatedFile.Features
+		result.AppendProjects(relatedFile.RelatedProjects)
 
 		usage = []string{}
 		usage = analysis.FindUsage(relatedFile.MainEntrypoint, usage, 0)
@@ -52,6 +78,7 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouch
 				usedInFile := analysis.AnalysedEntrypointsIndex[usedInEntrypoint]
 				usedInFile.UsedIn = append(usedInFile.UsedIn, relatedFile)
 				potentiallyTouched[usedInEntrypoint] = usedInFile
+				result.AppendProjects(usedInFile.RelatedProjects)
 			}
 		}
 	}
@@ -63,9 +90,9 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (totalFeaturesTouch
 		}
 
 		if len(touchedFile.Features) > 0 {
-			totalFeaturesTouched[relativePath] = touchedFile.Features
+			result.TotalFeaturesTouched[relativePath] = touchedFile.Features
 		} else {
-			toBeChecked[relativePath] = touchedFile
+			result.ToBeChecked[relativePath] = touchedFile
 		}
 	}
 
