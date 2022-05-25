@@ -30,6 +30,24 @@ function firstFunction() {
     //Some code here
 }
 ```
+You could also define the project using `@project {DEPENDENCY_NAME}` annotation, which uses this particular change. Here is an example:
+```php
+<?php
+
+/**
+ * @project dependency
+ */
+function firstFunction() {
+    //Some code here
+}
+```
+
+If you have more than 1 dependency, you can define them all using comma
+``` 
+/**
+ * @project dependency1,dependency2
+ */
+```
 
 Run the command to find the touched files:
 ```shell script
