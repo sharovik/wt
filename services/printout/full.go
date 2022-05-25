@@ -3,58 +3,30 @@ package printout
 import (
 	"fmt"
 	"strings"
-
-	"github.com/sharovik/wt/configuration"
-	"github.com/sharovik/wt/dto"
 )
 
 //FullPrintout the full printout struct
 type FullPrintout struct {
-	AbsolutePath            string
-	Config                  configuration.Config
-	PrintToBeCheckedDetails bool
-	TotalFeaturesTouched    map[string][]dto.Feature
-	ToBeChecked             map[string]dto.IndexedFile
+	BasePrintout
 }
 
-func (s *FullPrintout) SetAbsolutePath(path string) {
-	s.AbsolutePath = path
-}
-
-func (s *FullPrintout) SetConfig(config configuration.Config) {
-	s.Config = config
-}
-
-func (s *FullPrintout) SetTotalFeaturesTouched(features map[string][]dto.Feature) {
-	s.TotalFeaturesTouched = features
-}
-
-func (s *FullPrintout) SetToBeChecked(files map[string]dto.IndexedFile) {
-	s.ToBeChecked = files
-}
-
-func (s FullPrintout) GetToBeChecked() map[string]dto.IndexedFile {
-	return s.ToBeChecked
-}
-
-func (s *FullPrintout) WithToBeCheckedDetails() {
-	s.PrintToBeCheckedDetails = true
-}
-
-func (s FullPrintout) IsToBeCheckedDetailsEnabled() bool {
-	return s.PrintToBeCheckedDetails
-}
-
-func (s FullPrintout) ToBeCheckedText() string {
-	return generateToBeCheckedText(&s)
-}
-
+//Text - main method for text output generation
 func (s FullPrintout) Text() string {
 	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\n", s.AbsolutePath))
 
 	if len(s.TotalFeaturesTouched) == 0 {
 		resultString += WarningText("No features found.")
 		return resultString
+	}
+
+	if len(s.ProjectsToCheck) > 0 {
+		resultString += WarningText("You might need to implement fixes for the next dependencies:\n")
+
+		for _, p := range s.ProjectsToCheck {
+			resultString += NormalText(fmt.Sprintf("* %s\n", p))
+		}
+
+		resultString += "\n\n"
 	}
 
 	resultString += InfoText("Below you can see the list of touched features:\n\n")

@@ -16,11 +16,12 @@ const (
 	defaultDestinationBranch = "master"
 	defaultIgnoredPaths      = "tests"
 
-	appVersion = "v1.1.5"
+	appVersion = "v1.2.0"
 
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
 
+//Service the service struct
 type Service struct {
 	WorkingBranch      string
 	DestinationBranch  string
@@ -33,10 +34,11 @@ type Service struct {
 	MaxAnalysisDepth   int
 	WithToBeChecked    bool
 	Version            bool
-	CpuProfile         string
+	CPUProfile         string
 	MemProfile         string
 }
 
+//ParseArgs we parse the arguments from the CLI
 func (s *Service) ParseArgs() {
 	workingBranch := flag.String("workingBranch", "", "Working branch which will be compared with the destination branch.")
 	destinationBranch := flag.String("destinationBranch", defaultDestinationBranch, "Destination branch with which we will compare selected working branch.")
@@ -65,7 +67,7 @@ func (s *Service) ParseArgs() {
 	s.MaxAnalysisDepth = *maxAnalysisDepth
 	s.WithToBeChecked = *withToBeChecked
 	s.Version = *version
-	s.CpuProfile = *cpuProfile
+	s.CPUProfile = *cpuProfile
 	s.MemProfile = *memProfile
 
 	s.loadDefaults()
@@ -85,7 +87,7 @@ func (s Service) initConfiguration() {
 		MaxAnalysisDepth:   s.MaxAnalysisDepth,
 		WithToBeChecked:    s.WithToBeChecked,
 		Version:            s.Version,
-		CpuProfile:         s.CpuProfile,
+		CpuProfile:         s.CPUProfile,
 		MemProfile:         s.MemProfile,
 	}
 }

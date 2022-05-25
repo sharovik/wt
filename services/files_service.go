@@ -122,6 +122,16 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 			indexedFile.Features = append(indexedFile.Features, feature)
 		}
 
+		//We check for projects annotation
+		if strings.Contains(text, ProjectAlias) {
+			projects, err := extractProjects(scanner.Text())
+			if err != nil || len(projects) == 0 {
+				continue
+			}
+
+			indexedFile.SyncProjects(projects)
+		}
+
 		if entryPointSrc == "" {
 			if mainEntrypointSrc == "" {
 				mainEntrypointSrc, err = analysis.An.ExtractMainEntrypointSrc(text)
