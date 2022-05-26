@@ -10,7 +10,7 @@ import (
 
 const (
 	//FeatureAlias - the constant which identifies the feature alias which our parser will try to find in the strings
-	FeatureAlias     = "@featureType"
+	FeatureAlias = "@featureType"
 
 	//ProjectAlias - the constant for project annotation search
 	ProjectAlias     = "@project"
