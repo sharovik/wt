@@ -2,9 +2,9 @@ package dto
 
 //AnalysisResult the analysis result struct will be used for final analysis output generation
 type AnalysisResult struct {
-	ToBeChecked map[string]IndexedFile
+	ToBeChecked          map[string]IndexedFile
 	TotalFeaturesTouched map[string][]Feature
-	ProjectsToCheck map[string]string
+	ProjectsToCheck      map[string]string
 }
 
 //AppendProjects method for sync of the projects for the indexed file

@@ -4,5 +4,5 @@ package dto
 type Feature struct {
 	Name     string `json:"name"`
 	FilePath string `json:"file_path"`
-	Line     int `json:"line"`
+	Line     int    `json:"line"`
 }
