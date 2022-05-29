@@ -23,9 +23,9 @@ type BasePrintoutInterface interface {
 	SetAbsolutePath(path string)
 	SetConfig(config configuration.Config)
 	SetToBeChecked(files []dto.ToCheck)
-	SetProjectsToCheck(projects map[string]string)
+	SetProjectsToCheck(projects []string)
 	GetToBeChecked() []dto.ToCheck
-	GetProjectsToCheck() map[string]string
+	GetProjectsToCheck() []string
 	WithToBeCheckedDetails()
 	IsToBeCheckedDetailsEnabled() bool
 	Text() string
@@ -39,14 +39,14 @@ type BasePrintout struct {
 	PrintToBeCheckedDetails bool
 	TotalFeaturesTouched    []dto.FeatureTouched
 	ToBeChecked             []dto.ToCheck
-	ProjectsToCheck         map[string]string
+	ProjectsToCheck         []string
 }
 
 //PrintObject will be used for printout object generation
 type PrintObject struct {
 	TotalFeaturesTouched []dto.FeatureTouched `json:"total_features_touched"`
 	ToBeChecked          []dto.ToCheck        `json:"to_be_checked"`
-	ProjectsToCheck      map[string]string    `json:"projects_to_check"`
+	ProjectsToCheck      []string    `json:"projects_to_check"`
 }
 
 //SetAbsolutePath - setter for absolute path
@@ -90,12 +90,12 @@ func (s BasePrintout) ToBeCheckedText() string {
 }
 
 //SetProjectsToCheck - setter for ProjectsToCheck attribute
-func (s *BasePrintout) SetProjectsToCheck(projects map[string]string) {
+func (s *BasePrintout) SetProjectsToCheck(projects []string) {
 	s.ProjectsToCheck = projects
 }
 
 //GetProjectsToCheck - getter for ProjectsToCheck attribute
-func (s BasePrintout) GetProjectsToCheck() map[string]string {
+func (s BasePrintout) GetProjectsToCheck() []string {
 	return s.ProjectsToCheck
 }
 
