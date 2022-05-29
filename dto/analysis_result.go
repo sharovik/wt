@@ -4,7 +4,7 @@ package dto
 type AnalysisResult struct {
 	ToBeChecked          []ToCheck
 	TotalFeaturesTouched []FeatureTouched
-	ProjectsToCheck      map[string]string
+	ProjectsToCheck      []string
 }
 
 //FeatureTouched the touched feature struct
@@ -20,20 +20,20 @@ type ToCheck struct {
 }
 
 //AppendProjects method for sync of the projects for the indexed file
-func (r *AnalysisResult) AppendProjects(projects map[string]string) {
-	if nil == r.ProjectsToCheck {
-		r.ProjectsToCheck = map[string]string{}
-	}
-
-	if len(projects) == 0 {
-		return
-	}
-
+func (r *AnalysisResult) AppendProjects(projects []string) {
 	for _, p := range projects {
-		if r.ProjectsToCheck[p] != "" {
+		var isProjectExists = false
+		for _, existingProject := range r.ProjectsToCheck {
+			if existingProject == p {
+				isProjectExists = true
+				break
+			}
+		}
+
+		if isProjectExists {
 			continue
 		}
 
-		r.ProjectsToCheck[p] = p
+		r.ProjectsToCheck = append(r.ProjectsToCheck, p)
 	}
 }
