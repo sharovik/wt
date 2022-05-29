@@ -59,8 +59,6 @@ func extractProjects(text string) (project []string, err error) {
 func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.AnalysisResult) {
 	var usage []string
 	potentiallyTouched := map[string]dto.IndexedFile{}
-	result.TotalFeaturesTouched = map[string][]dto.Feature{}
-	result.ToBeChecked = map[string]dto.IndexedFile{}
 	for _, file := range diff {
 		if analysis.AnalysedPathsIndex[file].Path == "" {
 			continue
@@ -68,7 +66,19 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.Analysi
 
 		relatedFile := analysis.AnalysedPathsIndex[file]
 		relativePath := strings.ReplaceAll(relatedFile.Path, absolutePath+"/", "")
-		result.TotalFeaturesTouched[relativePath] = relatedFile.Features
+
+		if len(relatedFile.Features) > 0 {
+			result.TotalFeaturesTouched = append(result.TotalFeaturesTouched, dto.FeatureTouched{
+				FilePath: relativePath,
+				Features: relatedFile.Features,
+			})
+		} else {
+			result.ToBeChecked = append(result.ToBeChecked, dto.ToCheck{
+				FilePath: relativePath,
+				IndexedFile: relatedFile,
+			})
+		}
+
 		result.AppendProjects(relatedFile.RelatedProjects)
 
 		usage = []string{}
@@ -90,9 +100,15 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.Analysi
 		}
 
 		if len(touchedFile.Features) > 0 {
-			result.TotalFeaturesTouched[relativePath] = touchedFile.Features
+			result.TotalFeaturesTouched = append(result.TotalFeaturesTouched, dto.FeatureTouched{
+				FilePath: relativePath,
+				Features: touchedFile.Features,
+			})
 		} else {
-			result.ToBeChecked[relativePath] = touchedFile
+			result.ToBeChecked = append(result.ToBeChecked, dto.ToCheck{
+				FilePath: relativePath,
+				IndexedFile: touchedFile,
+			})
 		}
 	}
 

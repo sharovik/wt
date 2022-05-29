@@ -31,13 +31,9 @@ func (s FeaturesPrintout) Text() string {
 
 	resultString += InfoText("Below you can see the list of touched features:\n\n")
 	alreadyAdded := map[string]string{}
-	for file, features := range s.TotalFeaturesTouched {
-		if len(features) == 0 {
-			continue
-		}
-
-		file = strings.ReplaceAll(file, s.AbsolutePath+"/", "")
-		for _, feature := range features {
+	for _, feature := range s.TotalFeaturesTouched {
+		file := strings.ReplaceAll(feature.FilePath, s.AbsolutePath+"/", "")
+		for _, feature := range feature.Features {
 			if alreadyAdded[feature.Name] != "" {
 				continue
 			}

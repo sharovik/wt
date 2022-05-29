@@ -19,12 +19,12 @@ const (
 
 //BasePrintoutInterface the base interface for the printout object
 type BasePrintoutInterface interface {
-	SetTotalFeaturesTouched(totalFeaturesTouched map[string][]dto.Feature)
+	SetTotalFeaturesTouched(totalFeaturesTouched []dto.FeatureTouched)
 	SetAbsolutePath(path string)
 	SetConfig(config configuration.Config)
-	SetToBeChecked(files map[string]dto.IndexedFile)
+	SetToBeChecked(files []dto.ToCheck)
 	SetProjectsToCheck(projects map[string]string)
-	GetToBeChecked() map[string]dto.IndexedFile
+	GetToBeChecked() []dto.ToCheck
 	GetProjectsToCheck() map[string]string
 	WithToBeCheckedDetails()
 	IsToBeCheckedDetailsEnabled() bool
@@ -37,16 +37,16 @@ type BasePrintout struct {
 	AbsolutePath            string
 	Config                  configuration.Config
 	PrintToBeCheckedDetails bool
-	TotalFeaturesTouched    map[string][]dto.Feature
-	ToBeChecked             map[string]dto.IndexedFile
+	TotalFeaturesTouched    []dto.FeatureTouched
+	ToBeChecked             []dto.ToCheck
 	ProjectsToCheck         map[string]string
 }
 
 //PrintObject will be used for printout object generation
 type PrintObject struct {
-	TotalFeaturesTouched map[string][]dto.Feature   `json:"total_features_touched"`
-	ToBeChecked          map[string]dto.IndexedFile `json:"to_be_checked"`
-	ProjectsToCheck      map[string]string          `json:"projects_to_check"`
+	TotalFeaturesTouched []dto.FeatureTouched `json:"total_features_touched"`
+	ToBeChecked          []dto.ToCheck        `json:"to_be_checked"`
+	ProjectsToCheck      map[string]string    `json:"projects_to_check"`
 }
 
 //SetAbsolutePath - setter for absolute path
@@ -60,17 +60,17 @@ func (s *BasePrintout) SetConfig(config configuration.Config) {
 }
 
 //SetTotalFeaturesTouched - setter for total features touched objects map
-func (s *BasePrintout) SetTotalFeaturesTouched(features map[string][]dto.Feature) {
+func (s *BasePrintout) SetTotalFeaturesTouched(features []dto.FeatureTouched) {
 	s.TotalFeaturesTouched = features
 }
 
 //SetToBeChecked - setter for to be checked files map
-func (s *BasePrintout) SetToBeChecked(files map[string]dto.IndexedFile) {
+func (s *BasePrintout) SetToBeChecked(files []dto.ToCheck) {
 	s.ToBeChecked = files
 }
 
 //GetToBeChecked - getter for to be checked map
-func (s BasePrintout) GetToBeChecked() map[string]dto.IndexedFile {
+func (s BasePrintout) GetToBeChecked() []dto.ToCheck {
 	return s.ToBeChecked
 }
 
@@ -120,16 +120,16 @@ func generateToBeCheckedText(obj BasePrintoutInterface) string {
 	return resultString
 }
 
-func generateToBeCheckedDetails(toBeChecked map[string]dto.IndexedFile) (resultString string) {
+func generateToBeCheckedDetails(toBeChecked []dto.ToCheck) (resultString string) {
 	if len(toBeChecked) == 0 {
 		return ""
 	}
 
 	for relativePath, file := range toBeChecked {
 		resultString += fmt.Sprintf("- `%s`", relativePath)
-		if len(file.UsedIn) > 0 {
+		if len(file.IndexedFile.UsedIn) > 0 {
 			resultString += " touched by ["
-			for _, usedInFile := range file.UsedIn {
+			for _, usedInFile := range file.IndexedFile.UsedIn {
 				resultString += fmt.Sprintf("%s,", usedInFile.MainEntrypoint)
 			}
 			resultString += "]"
