@@ -125,8 +125,8 @@ func generateToBeCheckedDetails(toBeChecked []dto.ToCheck) (resultString string)
 		return ""
 	}
 
-	for relativePath, file := range toBeChecked {
-		resultString += fmt.Sprintf("- `%s`", relativePath)
+	for _, file := range toBeChecked {
+		resultString += fmt.Sprintf("- `%s`", file.FilePath)
 		if len(file.IndexedFile.UsedIn) > 0 {
 			resultString += " touched by ["
 			for _, usedInFile := range file.IndexedFile.UsedIn {
