@@ -7,13 +7,13 @@ import (
 	"regexp"
 )
 
-//VcsInterface the vcs interface
+// VcsInterface the vcs interface
 type VcsInterface interface {
 	Diff(path string, branch1 string, branch2 string) (files []string, err error)
 	parseDiffOutput(output string, absolutePath string) (files []string, err error)
 }
 
-//Git the object struct of Git vcs
+// Git the object struct of Git vcs
 type Git struct {
 }
 
@@ -21,7 +21,7 @@ const (
 	regexpParseFileNames = `(?im)(?:[A-Z]\s+)(.*)`
 )
 
-//Diff the main method which is used for diff files get
+// Diff the main method which is used for diff files get
 func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, err error) {
 	cmd := exec.Command("git", "diff", "--name-status", fmt.Sprintf("%s..%s", branch1, branch2))
 	cmd.Dir = path
@@ -29,7 +29,7 @@ func (g Git) Diff(path string, branch1 string, branch2 string) (files []string, 
 	cmd.Stderr = &errbuf
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Received git error: %s; Stderr: %s", err.Error(), errbuf.String()))
+		fmt.Printf("Received git error: %s; Stderr: %s\n", err.Error(), errbuf.String())
 		return nil, err
 	}
 

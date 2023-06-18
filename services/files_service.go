@@ -21,7 +21,7 @@ func isIgnoredPath(path string, ignoredPaths []string) bool {
 	return false
 }
 
-//AnalyseTheCode method loads the available project features in the memory
+// AnalyseTheCode method loads the available project features in the memory
 func AnalyseTheCode(src string, ext string, ignored []string) (foundResults map[string]dto.IndexedFile, pathIndex map[string]dto.IndexedFile, importsIndex map[string][]string, err error) {
 	if _, err := os.Stat(src); os.IsNotExist(err) {
 		return foundResults, pathIndex, importsIndex, err
@@ -52,7 +52,7 @@ func AnalyseTheCode(src string, ext string, ignored []string) (foundResults map[
 
 		indexedFile, err := AnalyseFile(src, path)
 		if err != nil {
-			fmt.Println(fmt.Sprintf("Error during file `%s` parse : %s", path, err.Error()))
+			fmt.Printf("Error during file `%s` parse : %s\n", path, err.Error())
 			return err
 		}
 
@@ -80,9 +80,9 @@ func AnalyseTheCode(src string, ext string, ignored []string) (foundResults map[
 	return
 }
 
-//AnalyseFile find the features in the destination file path
-//basePath - will be used for generation of relation path
-//filePath - the actual absolute file path
+// AnalyseFile find the features in the destination file path
+// basePath - will be used for generation of relation path
+// filePath - the actual absolute file path
 func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile, err error) {
 	fsFile, err := os.Open(filePath)
 	if err != nil {
@@ -178,7 +178,7 @@ func AnalyseFile(basePath string, filePath string) (indexedFile dto.IndexedFile,
 	return indexedFile, nil
 }
 
-//GetIgnoredFilePaths used for generation of the list of ignored file paths, which will be ignored during the features search
+// GetIgnoredFilePaths used for generation of the list of ignored file paths, which will be ignored during the features search
 func GetIgnoredFilePaths(path string, absolutePath string) (files []string, err error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, nil

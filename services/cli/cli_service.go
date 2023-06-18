@@ -21,7 +21,7 @@ const (
 	versionTemplate = "What touched by sharovik. Version: %s\n\n"
 )
 
-//Service the service struct
+// Service the service struct
 type Service struct {
 	WorkingBranch      string
 	DestinationBranch  string
@@ -38,7 +38,7 @@ type Service struct {
 	MemProfile         string
 }
 
-//ParseArgs we parse the arguments from the CLI
+// ParseArgs we parse the arguments from the CLI
 func (s *Service) ParseArgs() {
 	workingBranch := flag.String("workingBranch", "", "Working branch which will be compared with the destination branch.")
 	destinationBranch := flag.String("destinationBranch", defaultDestinationBranch, "Destination branch with which we will compare selected working branch.")
@@ -99,7 +99,7 @@ func (s *Service) loadDefaults() {
 	}
 
 	if s.VcsType == "" {
-		log.Fatal(fmt.Errorf("The vcs should not be empty "))
+		log.Fatal(fmt.Errorf("the vcs should not be empty "))
 	}
 
 	if s.Path == "" {
@@ -115,6 +115,6 @@ func (s *Service) loadDefaults() {
 	}
 
 	if s.WorkingBranch == "" || s.DestinationBranch == "" {
-		log.Fatal(fmt.Errorf("Working branch and destination branch should not be empty. Please make sure you define them. "))
+		log.Fatal(fmt.Errorf("working branch and destination branch should not be empty. Please make sure you define them. "))
 	}
 }

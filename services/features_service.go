@@ -48,14 +48,14 @@ func extractProjects(text string) (project []string, err error) {
 	}
 
 	projectAnnotationValue := strings.TrimSpace(matches[1])
-	if "" == projectAnnotationValue {
+	if projectAnnotationValue == "" {
 		return
 	}
 
 	return strings.Split(projectAnnotationValue, ","), nil
 }
 
-//FindFeaturesInIndex method tries to find features in the prepared indexes
+// FindFeaturesInIndex method tries to find features in the prepared indexes
 func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.AnalysisResult) {
 	var usage []string
 	potentiallyTouched := map[string]dto.IndexedFile{}
@@ -74,7 +74,7 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.Analysi
 			})
 		} else {
 			result.ToBeChecked = append(result.ToBeChecked, dto.ToCheck{
-				FilePath: relativePath,
+				FilePath:    relativePath,
 				IndexedFile: relatedFile,
 			})
 		}
@@ -106,7 +106,7 @@ func FindFeaturesInIndex(diff []string, absolutePath string) (result dto.Analysi
 			})
 		} else {
 			result.ToBeChecked = append(result.ToBeChecked, dto.ToCheck{
-				FilePath: relativePath,
+				FilePath:    relativePath,
 				IndexedFile: touchedFile,
 			})
 		}

@@ -4,12 +4,12 @@ import (
 	"fmt"
 )
 
-//FullPrintout the full printout struct
+// FullPrintout the full printout struct
 type FullPrintout struct {
 	BasePrintout
 }
 
-//Text - main method for text output generation
+// Text - main method for text output generation
 func (s FullPrintout) Text() string {
 	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\n", s.AbsolutePath))
 
@@ -38,7 +38,7 @@ func (s FullPrintout) Text() string {
 		resultString += NormalText("------------------\n")
 	}
 
-	resultString += InfoText(fmt.Sprintf("%s", s.ToBeCheckedText()))
+	resultString += InfoText(s.ToBeCheckedText())
 	resultString += WarningText(fmt.Sprintf("\nPlease make sure you test these features before you merge `%s` branch into `%s`.", s.Config.WorkingBranch, s.Config.DestinationBranch))
 
 	return resultString
