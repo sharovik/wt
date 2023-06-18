@@ -5,12 +5,12 @@ import (
 	"strings"
 )
 
-//FeaturesPrintout the full printout struct
+// FeaturesPrintout the full printout struct
 type FeaturesPrintout struct {
 	BasePrintout
 }
 
-//Text - main method for text output generation
+// Text - main method for text output generation
 func (s FeaturesPrintout) Text() string {
 	resultString := InfoText(fmt.Sprintf("Analysing the code in path: `%s`\n", s.AbsolutePath))
 
@@ -43,7 +43,7 @@ func (s FeaturesPrintout) Text() string {
 		}
 	}
 
-	resultString += InfoText(fmt.Sprintf("%s", s.ToBeCheckedText()))
+	resultString += InfoText(s.ToBeCheckedText())
 	resultString += WarningText(fmt.Sprintf("\nPlease make sure you test these features before you merge `%s` branch into `%s`.", s.Config.WorkingBranch, s.Config.DestinationBranch))
 
 	return resultString

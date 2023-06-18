@@ -17,7 +17,7 @@ const (
 	DisplayJSON = "json"
 )
 
-//BasePrintoutInterface the base interface for the printout object
+// BasePrintoutInterface the base interface for the printout object
 type BasePrintoutInterface interface {
 	SetTotalFeaturesTouched(totalFeaturesTouched []dto.FeatureTouched)
 	SetAbsolutePath(path string)
@@ -32,7 +32,7 @@ type BasePrintoutInterface interface {
 	ToBeCheckedText() string
 }
 
-//BasePrintout the base struct for printout
+// BasePrintout the base struct for printout
 type BasePrintout struct {
 	AbsolutePath            string
 	Config                  configuration.Config
@@ -42,64 +42,64 @@ type BasePrintout struct {
 	ProjectsToCheck         []string
 }
 
-//PrintObject will be used for printout object generation
+// PrintObject will be used for printout object generation
 type PrintObject struct {
 	TotalFeaturesTouched []dto.FeatureTouched `json:"total_features_touched"`
 	ToBeChecked          []dto.ToCheck        `json:"to_be_checked"`
-	ProjectsToCheck      []string    `json:"projects_to_check"`
+	ProjectsToCheck      []string             `json:"projects_to_check"`
 }
 
-//SetAbsolutePath - setter for absolute path
+// SetAbsolutePath - setter for absolute path
 func (s *BasePrintout) SetAbsolutePath(path string) {
 	s.AbsolutePath = path
 }
 
-//SetConfig - setter for configuration
+// SetConfig - setter for configuration
 func (s *BasePrintout) SetConfig(config configuration.Config) {
 	s.Config = config
 }
 
-//SetTotalFeaturesTouched - setter for total features touched objects map
+// SetTotalFeaturesTouched - setter for total features touched objects map
 func (s *BasePrintout) SetTotalFeaturesTouched(features []dto.FeatureTouched) {
 	s.TotalFeaturesTouched = features
 }
 
-//SetToBeChecked - setter for to be checked files map
+// SetToBeChecked - setter for to be checked files map
 func (s *BasePrintout) SetToBeChecked(files []dto.ToCheck) {
 	s.ToBeChecked = files
 }
 
-//GetToBeChecked - getter for to be checked map
+// GetToBeChecked - getter for to be checked map
 func (s BasePrintout) GetToBeChecked() []dto.ToCheck {
 	return s.ToBeChecked
 }
 
-//WithToBeCheckedDetails - sets the print to be checked flag
+// WithToBeCheckedDetails - sets the print to be checked flag
 func (s *BasePrintout) WithToBeCheckedDetails() {
 	s.PrintToBeCheckedDetails = true
 }
 
-//IsToBeCheckedDetailsEnabled - return the current state of PrintToBeCheckedDetails flag
+// IsToBeCheckedDetailsEnabled - return the current state of PrintToBeCheckedDetails flag
 func (s BasePrintout) IsToBeCheckedDetailsEnabled() bool {
 	return s.PrintToBeCheckedDetails
 }
 
-//ToBeCheckedText - generates the "to be checked" text
+// ToBeCheckedText - generates the "to be checked" text
 func (s BasePrintout) ToBeCheckedText() string {
 	return generateToBeCheckedText(&s)
 }
 
-//SetProjectsToCheck - setter for ProjectsToCheck attribute
+// SetProjectsToCheck - setter for ProjectsToCheck attribute
 func (s *BasePrintout) SetProjectsToCheck(projects []string) {
 	s.ProjectsToCheck = projects
 }
 
-//GetProjectsToCheck - getter for ProjectsToCheck attribute
+// GetProjectsToCheck - getter for ProjectsToCheck attribute
 func (s BasePrintout) GetProjectsToCheck() []string {
 	return s.ProjectsToCheck
 }
 
-//Text - main method for text output generation
+// Text - main method for text output generation
 func (s BasePrintout) Text() string {
 	return ""
 }
@@ -111,7 +111,7 @@ func generateToBeCheckedText(obj BasePrintoutInterface) string {
 
 	resultString := fmt.Sprintf("\n\nYour changes can potentially touch the functionality in the `%d` files.", len(obj.GetToBeChecked()))
 	if obj.IsToBeCheckedDetailsEnabled() {
-		resultString += fmt.Sprintf("\nPlease check the following files:\n\n")
+		resultString += "\nPlease check the following files:\n\n"
 		resultString += fmt.Sprintf("%s\n\n", generateToBeCheckedDetails(obj.GetToBeChecked()))
 	} else {
 		resultString += fmt.Sprintf("\nThese files does not have `%s` annotation.\nRun comman with `-withToBeChecked=true` flag for more details.\n", services.FeatureAlias)
@@ -142,7 +142,7 @@ func generateToBeCheckedDetails(toBeChecked []dto.ToCheck) (resultString string)
 	return
 }
 
-//FromType generates the printout object based on selected display type
+// FromType generates the printout object based on selected display type
 func FromType(displayType string) (BasePrintoutInterface, error) {
 	switch displayType {
 	case DisplayFull:
@@ -153,20 +153,20 @@ func FromType(displayType string) (BasePrintoutInterface, error) {
 		return &JSONPrintout{}, nil
 	}
 
-	return nil, fmt.Errorf("Failed to generate printout obj. ")
+	return nil, fmt.Errorf("failed to generate printout obj. ")
 }
 
-//InfoText - prints the text with INFO color
+// InfoText - prints the text with INFO color
 func InfoText(text string) string {
 	return fmt.Sprintf("\033[1;32m%s\033[0m", text)
 }
 
-//NormalText - prints the text with Normal color
+// NormalText - prints the text with Normal color
 func NormalText(text string) string {
 	return fmt.Sprintf("\033[1;36m%s\033[0m", text)
 }
 
-//WarningText - prints the text with Warning color
+// WarningText - prints the text with Warning color
 func WarningText(text string) string {
 	return fmt.Sprintf("\033[1;33m%s\033[0m", text)
 }
