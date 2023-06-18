@@ -30,3 +30,7 @@ code-check:
 code-clean:
 	make imports
 	make format
+
+check-security:
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+	govulncheck ./...
